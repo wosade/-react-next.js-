@@ -1,0 +1,39 @@
+@import '../../styles/variables.less';
+
+.wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: @spacing-3;
+  margin-bottom: @spacing-4;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: @radius-sm;
+  background: @bg-hover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: @text-xs;
+}
+
+.bubble {
+  display: flex;
+  align-items: center;
+  gap: @spacing-1;
+  padding: @spacing-3 @spacing-4;
+  border-radius: @radius-lg;
+  border-bottom-left-radius: 4px;
+  background: @bg-secondary;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: @radius-full;
+  background: @text-muted;
+  animation: bounce 1s infinite;
+}

@@ -1,0 +1,88 @@
+@import '../../styles/variables.less';
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: @spacing-4 @spacing-6;
+  border-bottom: 1px solid @border-default;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  flex-shrink: 0;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: @spacing-3;
+}
+
+.iconBox {
+  width: 36px;
+  height: 36px;
+  border-radius: @radius-md;
+  background: @bg-hover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.botIcon {
+  width: 20px;
+  height: 20px;
+  color: @color-accent-purple;
+}
+
+.titleSection {
+  min-width: 0;
+}
+
+.title {
+  font-size: @text-15;
+  font-weight: 600;
+  color: @text-primary;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: @spacing-1\.5;
+  margin-top: @spacing-1;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: @radius-full;
+}
+
+.statusDotReady {
+  color: @color-success;
+}
+
+.statusDotProcessing {
+  color: @color-tool;
+}
+
+.statusText {
+  font-size: @text-xs;
+  color: @text-muted;
+}
+
+.toolBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: @spacing-1;
+  padding: @spacing-1 @spacing-2\.5;
+  border-radius: @radius-sm;
+  background: @bg-secondary;
+  color: @text-secondary;
+  font-weight: 500;
+  font-size: @text-xs;
+}
