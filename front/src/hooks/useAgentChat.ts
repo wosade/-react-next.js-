@@ -1,12 +1,9 @@
-'use client';
-
 import { useState, useCallback, useEffect } from 'react';
 import type { AgentMessage, ToolCall, Conversation } from '@/types/agent';
 import { generateId } from '@/lib/utils';
 import type { ToolOption } from '@/components/agent/ChatInput';
 import { fetchConversations, createConversation as createConversationApi } from '@/services/conversationApi';
 
-/** 可用工具列表 */
 export const AVAILABLE_TOOLS: ToolOption[] = [
   { name: 'search', label: '搜索', icon: '🔍' },
   { name: 'database', label: '数据库', icon: '🗄️' },
@@ -23,14 +20,12 @@ export function useAgentChat() {
 
   const activeConv = conversations.find((c) => c.id === activeConvId) ?? null;
 
-  /** 初始化：从后端加载会话列表 */
   useEffect(() => {
     fetchConversations()
       .then(setConversations)
       .catch((err) => console.error('加载会话列表失败:', err));
   }, []);
 
-  /** 切换工具选中 */
   const handleToggleTool = useCallback((name: string) => {
     setSelectedTools((prev) => {
       const next = new Set(prev);
@@ -43,7 +38,6 @@ export function useAgentChat() {
     });
   }, []);
 
-  /** 新建对话 */
   const handleNewConversation = useCallback(async () => {
     try {
       const conv = await createConversationApi();
@@ -56,19 +50,16 @@ export function useAgentChat() {
     }
   }, []);
 
-  /** 选择历史会话 */
   const handleSelectConversation = useCallback((id: string) => {
     setActiveConvId(id);
     setMessages([]);
     setIsLoading(false);
   }, []);
 
-  /** 发送消息 */
   const handleSend = useCallback(
     async (content: string) => {
       let convId = activeConvId;
 
-      // 还没有会话则先创建一个
       if (!convId) {
         try {
           const conv = await createConversationApi();
@@ -81,7 +72,6 @@ export function useAgentChat() {
         }
       }
 
-      // 用户消息
       const userMsg: AgentMessage = {
         id: generateId(),
         role: 'user',
@@ -91,7 +81,6 @@ export function useAgentChat() {
       setMessages((prev) => [...prev, userMsg]);
       setIsLoading(true);
 
-      // 更新侧边栏
       setConversations((prev) =>
         prev.map((c) =>
           c.id === convId
@@ -105,7 +94,6 @@ export function useAgentChat() {
         ),
       );
 
-      // 模拟 Agent 处理（后续替换为 SSE 调用）
       await new Promise((r) => setTimeout(r, 800));
 
       const toolCalls: ToolCall[] = Array.from(selectedTools).map((toolName) => ({
@@ -141,7 +129,6 @@ export function useAgentChat() {
     [activeConvId, selectedTools],
   );
 
-  /** 点示例快速填入 */
   const handleExampleClick = useCallback(
     (example: string) => {
       handleSend(example);

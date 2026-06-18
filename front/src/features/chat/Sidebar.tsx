@@ -1,14 +1,14 @@
-
-import React from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, MessageSquare, Clock } from 'lucide-react';
-import type { Conversation } from '@/types/agent';
-import styles from './ChatSidebar.module.less';
+import request from '@/api/request';
+import styles from './Sidebar.module.less';
 
-interface ChatSidebarProps {
-  conversations: Conversation[];
-  activeId: string | null;
-  onSelect: (id: string) => void;
-  onNew: () => void;
+interface Session {
+  id: string;
+  title: string;
+  lastMessage: string;
+  updatedAt: number;
 }
 
 /** 格式化相对时间 */
@@ -24,31 +24,50 @@ function relativeTime(ts: number): string {
   return new Date(ts).toLocaleDateString('zh-CN');
 }
 
-export default function ChatSidebar({
-  conversations,
-  activeId,
-  onSelect,
-  onNew,
-}: ChatSidebarProps) {
+export default function Sidebar() {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const navigate = useNavigate();
+  const { sessionId } = useParams();
+
+  /** 加载会话列表 */
+  const fetchSessions = async () => {
+    try {
+      const res = await request.get<{ data: Session[] }>('/sessions');
+      setSessions(res.data.data);
+    } catch (err) {
+      console.error('加载会话列表失败:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  /** 新建会话后导航到 /chat，用户在输入框发送消息时后端创建 */
+  const handleNew = () => {
+    navigate('/chat');
+  };
+
+  /** 点击会话跳转 */
+  const handleSelect = (id: string) => {
+    navigate(`/chat/${id}`);
+  };
+
   return (
     <aside className={styles.sidebar}>
-      {/* 顶部：新建对话按钮 */}
+      {/* 新建对话 */}
       <div className={styles.topSection}>
-        <button
-          onClick={onNew}
-          className={styles.newChatBtn}
-        >
+        <button onClick={handleNew} className={styles.newChatBtn}>
           <Plus className={styles.plusIcon} strokeWidth={2} />
           新建对话
         </button>
       </div>
 
-      {/* 分隔线 */}
       <div className={styles.divider} />
 
       {/* 会话列表 */}
       <div className={styles.list}>
-        {conversations.length === 0 ? (
+        {sessions.length === 0 ? (
           <div className={styles.empty}>
             <MessageSquare className={styles.emptyIcon} strokeWidth={1.5} />
             <p className={styles.emptyText}>
@@ -59,15 +78,14 @@ export default function ChatSidebar({
           </div>
         ) : (
           <div className={styles.listInner}>
-            {conversations.map((conv) => {
-              const isActive = activeId === conv.id;
+            {sessions.map((s) => {
+              const isActive = sessionId === s.id;
               return (
                 <button
-                  key={conv.id}
-                  onClick={() => onSelect(conv.id)}
+                  key={s.id}
+                  onClick={() => handleSelect(s.id)}
                   className={isActive ? styles.convItemActive : styles.convItem}
                 >
-                  {/* 标题 */}
                   <div className={styles.convHeader}>
                     <MessageSquare
                       className={isActive ? styles.convIconActive : styles.convIcon}
@@ -78,18 +96,14 @@ export default function ChatSidebar({
                         isActive ? styles.convTitleActive : styles.convTitleInactive
                       }`}
                     >
-                      {conv.title}
+                      {s.title}
                     </span>
                   </div>
-
-                  {/* 最后消息预览 */}
-                  <p className={styles.convPreview}>{conv.lastMessage}</p>
-
-                  {/* 时间 */}
+                  <p className={styles.convPreview}>{s.lastMessage}</p>
                   <div className={styles.convMeta}>
                     <Clock className={styles.convTimeIcon} strokeWidth={1.5} />
                     <span className={styles.convTime}>
-                      {relativeTime(conv.updatedAt)}
+                      {relativeTime(s.updatedAt)}
                     </span>
                   </div>
                 </button>

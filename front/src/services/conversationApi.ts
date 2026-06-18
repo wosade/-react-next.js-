@@ -25,7 +25,6 @@ export async function deleteConversation(id: string): Promise<void> {
   await apiClient(`/conversations/${id}`, { method: 'DELETE' });
 }
 
-/** 后端 ISO 字符串 → 前端时间戳 */
 function toConversation(raw: Conversation): Conversation {
   return {
     ...raw,

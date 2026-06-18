@@ -1,5 +1,5 @@
 /**
- * API 客户端
+ * API 客户端（fetch 封装，供 services 使用）
  */
 
 import { API_BASE_URL } from '@/lib/constants';

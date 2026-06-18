@@ -1,4 +1,3 @@
-'use client';
 
 import React, { useRef, useEffect } from 'react';
 import type { AgentMessage } from '@/types/agent';

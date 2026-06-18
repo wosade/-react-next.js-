@@ -4,7 +4,6 @@
 // 全局样式
 // ========================================
 
-// ---------- body ----------
 html {
   height: 100%;
 }
@@ -21,7 +20,6 @@ body {
   margin: 0;
 }
 
-// ---------- 自定义滚动条 ----------
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -40,12 +38,11 @@ body {
   background: @text-muted;
 }
 
-// ---------- 动画 ----------
 @keyframes bounce {
   0%, 100% {
     transform: translateY(0);
   }
- 50% {
+  50% {
     transform: translateY(-25%);
   }
 }
@@ -63,7 +60,6 @@ body {
   animation: spin 1s linear infinite;
 }
 
-// ---------- 响应式 ----------
 @media (max-width: 640px) {
   body {
     background: #FFFFFF;

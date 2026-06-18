@@ -1,0 +1,32 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.code {
+  font-size: 72px;
+  font-weight: 800;
+  color: @text-muted;
+  margin: 0;
+}
+
+.message {
+  font-size: @text-lg;
+  color: @text-secondary;
+  margin: @spacing-4 0 @spacing-6 0;
+}
+
+.link {
+  color: @color-accent-purple;
+  text-decoration: none;
+  font-size: @text-sm;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
