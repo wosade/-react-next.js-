@@ -21,5 +21,5 @@ export async function fetchConversation(id: string): Promise<Conversation> {
 
 /** 删除会话 */
 export async function deleteConversation(id: string): Promise<void> {
-  await request.delete(`/conversations/${id}`);
+   await request.delete(`/conversations/${id}`);
 }

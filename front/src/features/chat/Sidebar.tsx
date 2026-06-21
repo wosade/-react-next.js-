@@ -44,6 +44,7 @@ export default function Sidebar() {
     try {
       setCreating(true);
       const conv = await createConversation();
+      await loadList();
       navigate(`/chat/${conv.id}`);
     } catch (err) {
       console.error('创建会话失败:', err);
@@ -59,6 +60,8 @@ export default function Sidebar() {
 //  删除对话
 const handleDelete=async(id:string)=>{
   const res=await deleteConversation(id)
+  await loadList();
+  navigate('/chat')
 }
   return (
     <aside className={styles.sidebar}>

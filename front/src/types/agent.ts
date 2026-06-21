@@ -32,3 +32,5 @@ export interface Conversation {
   lastMessage: string;
   updatedAt: string;  // ISO 8601，与后端一致
 }
+
+// 返回的参数内省
