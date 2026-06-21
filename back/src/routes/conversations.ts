@@ -1,12 +1,19 @@
+/**
+ * 会话路由 — 所有接口均需登录
+ */
 import { Router } from 'express';
 import * as conversationService from '../services/conversationService.js';
+import { requireJwt, type AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
 
-/** GET /api/conversations — 获取会话列表 */
-router.get('/', async (_req, res, next) => {
+// 所有会话接口都要登录
+router.use(requireJwt);
+
+/** GET /api/conversations — 获取当前用户的会话列表 */
+router.get('/', async (req: AuthRequest, res, next) => {
   try {
-    const list = await conversationService.getConversationList();
+    const list = await conversationService.getConversationList(req.userId!);
     res.json({ data: list });
   } catch (err) {
     next(err);
@@ -14,10 +21,10 @@ router.get('/', async (_req, res, next) => {
 });
 
 /** POST /api/conversations — 创建新会话 */
-router.post('/', async (req, res, next) => {
+router.post('/', async (req: AuthRequest, res, next) => {
   try {
     const { title } = req.body;
-    const conv = await conversationService.createConversation(title);
+    const conv = await conversationService.createConversation(req.userId!, title);
     res.status(201).json({ data: conv });
   } catch (err) {
     next(err);
@@ -25,9 +32,9 @@ router.post('/', async (req, res, next) => {
 });
 
 /** GET /api/conversations/:id — 获取单个会话详情 */
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', async (req: AuthRequest, res, next) => {
   try {
-    const conv = await conversationService.getConversation(req.params.id);
+    const conv = await conversationService.getConversation(req.params.id as string);
     res.json({ data: conv });
   } catch (err) {
     next(err);
@@ -35,10 +42,10 @@ router.get('/:id', async (req, res, next) => {
 });
 
 /** PATCH /api/conversations/:id — 更新会话 */
-router.patch('/:id', async (req, res, next) => {
+router.patch('/:id', async (req: AuthRequest, res, next) => {
   try {
     const { title } = req.body;
-    const conv = await conversationService.updateConversation(req.params.id, { title });
+    const conv = await conversationService.updateConversation(req.params.id as string, { title });
     res.json({ data: conv });
   } catch (err) {
     next(err);
@@ -46,9 +53,9 @@ router.patch('/:id', async (req, res, next) => {
 });
 
 /** DELETE /api/conversations/:id — 删除会话 */
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', async (req: AuthRequest, res, next) => {
   try {
-    await conversationService.deleteConversation(req.params.id);
+    await conversationService.deleteConversation(req.params.id as string);
     res.json({ data: null });
   } catch (err) {
     next(err);

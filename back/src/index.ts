@@ -2,8 +2,8 @@ import { config } from 'dotenv';
 import { resolve } from 'path';
 
 // 从项目根目录 .env/ 加载配置
-config({ path: resolve(__dirname, '../../.env/.env') });
-config({ path: resolve(__dirname, '../../.env/.env.back') });
+config({ path: resolve(import.meta.dirname, '../../.env/.env') });
+config({ path: resolve(import.meta.dirname, '../../.env/.env.back') });
 
 import express from 'express';
 import cors from 'cors';
@@ -18,6 +18,12 @@ const PORT = process.env.PORT || 3001;
 // 中间件
 app.use(cors());
 app.use(express.json());
+
+// 调试日志
+app.use((req, _res, next) => {
+  console.log(`[REQ] ${req.method} ${req.url}`);
+  next();
+});
 
 // 路由
 app.get('/api/health', (_req, res) => {

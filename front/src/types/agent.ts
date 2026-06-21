@@ -30,5 +30,5 @@ export interface Conversation {
   id: string;
   title: string;
   lastMessage: string;
-  updatedAt: number;
+  updatedAt: string;  // ISO 8601，与后端一致
 }

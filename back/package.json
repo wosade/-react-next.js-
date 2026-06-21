@@ -2,8 +2,10 @@
   "name": "back",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "dev:debug": "tsx watch --inspect src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -14,6 +16,7 @@
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.22.5",
+    "tsconfig-paths": "^4.2.0",
     "uuid": "^14.0.0"
   },
   "devDependencies": {

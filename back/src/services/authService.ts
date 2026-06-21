@@ -26,7 +26,6 @@ function generateTokens(user: UserPayload): TokenPair {
   const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
   } as jwt.SignOptions);
-  const token=jwt.sign({id:user.id})
   const refreshToken = jwt.sign(
     { id: user.id, type: 'refresh' },
     JWT_SECRET,

@@ -2,9 +2,9 @@ import * as conversationModel from '../models/conversation.js';
 import { AppError } from '../middleware/errorHandler.js';
 import type { Conversation, ConversationDetail, Message } from '../types/index.js';
 
-/** 获取所有会话列表 */
-export async function getConversationList(): Promise<Conversation[]> {
-  return conversationModel.findAllConversations();
+/** 获取当前用户的会话列表 */
+export async function getConversationList(userId: string): Promise<Conversation[]> {
+  return conversationModel.findAllConversations(userId);
 }
 
 /** 获取单个会话详情 */
@@ -17,8 +17,8 @@ export async function getConversation(id: string): Promise<ConversationDetail> {
 }
 
 /** 创建新会话 */
-export async function createConversation(title?: string): Promise<Conversation> {
-  return conversationModel.createConversation(title);
+export async function createConversation(userId: string, title?: string): Promise<Conversation> {
+  return conversationModel.createConversation(userId, title);
 }
 
 /** 更新会话 */
