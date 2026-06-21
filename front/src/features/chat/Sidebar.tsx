@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Plus, MessageSquare, Clock } from 'lucide-react';
-import { fetchConversations, createConversation } from '@/services/conversationApi';
+import { Plus, MessageSquare, Clock, Leaf ,Trash2} from 'lucide-react';
+import { fetchConversations, createConversation,deleteConversation } from '@/services/conversationApi';
 import type { Conversation } from '@/types/agent';
 import styles from './Sidebar.module.less';
 
@@ -56,7 +56,10 @@ export default function Sidebar() {
   const handleSelect = (id: string) => {
     navigate(`/chat/${id}`);
   };
-
+//  删除对话
+const handleDelete=async(id:string)=>{
+  const res=await deleteConversation(id)
+}
   return (
     <aside className={styles.sidebar}>
       <div className={styles.topSection}>
@@ -89,16 +92,24 @@ export default function Sidebar() {
                   className={isActive ? styles.convItemActive : styles.convItem}
                 >
                   <div className={styles.convHeader}>
+                    <div>
                     <MessageSquare
                       className={isActive ? styles.convIconActive : styles.convIcon}
                       strokeWidth={1.5}
                     />
-                    <span
+                    <span style={{marginLeft:10}}
                       className={`${styles.convTitle} ${
                         isActive ? styles.convTitleActive : styles.convTitleInactive
                       }`}
                     >
                       {c.title}
+                    </span>
+                    </div>
+                    <span onClick={()=>handleDelete(c.id)}>
+                      <Trash2
+                      className={isActive ? styles.convIconActive : styles.convIcon}
+                      strokeWidth={1.5}
+                    />
                     </span>
                   </div>
                   <p className={styles.convPreview}>{c.lastMessage}</p>

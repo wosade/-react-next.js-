@@ -56,7 +56,7 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
 router.delete('/:id', async (req: AuthRequest, res, next) => {
   try {
     await conversationService.deleteConversation(req.params.id as string);
-    res.json({ data: null });
+    res.json({ data: '删除成功' });
   } catch (err) {
     next(err);
   }
