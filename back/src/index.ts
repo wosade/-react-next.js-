@@ -37,7 +37,7 @@ app.use('/api/chat', chatRouter);
 
 // 错误处理（必须放在路由之后）
 app.use(errorHandler);
-
+console.log("process", process.env.DB_PASSWORD);
 // 启动
 initDb()
   .then(() => {

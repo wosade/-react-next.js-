@@ -11,7 +11,6 @@ config({ path: resolve(process.cwd(), '.env/.env') });
 config({ path: resolve(process.cwd(), '.env/.env.back') });
 
 
-
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   port: Number(process.env.DB_PORT) || 3306,
