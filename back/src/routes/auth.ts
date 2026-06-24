@@ -4,11 +4,12 @@
 import { Router } from 'express';
 import * as authService from '../services/authService.js';
 import { requireJwt, type AuthRequest } from '../middleware/auth.js';
+import { loginLimiter, registerLimiter } from '../middleware/rateLimiter.js';
 
 const router = Router();
 
 /** POST /api/auth/register — 注册 */
-router.post('/register', async (req, res, next) => {
+router.post('/register', registerLimiter, async (req, res, next) => {
   try {
     const { username, password } = req.body;
     const result = await authService.registerUser(username, password);
@@ -19,7 +20,7 @@ router.post('/register', async (req, res, next) => {
 });
 
 /** POST /api/auth/login — 登录 */
-router.post('/login', async (req, res, next) => {
+router.post('/login', loginLimiter, async (req, res, next) => {
   try {
     const { username, password } = req.body;
     const result = await authService.loginUser(username, password);

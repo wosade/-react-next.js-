@@ -1,15 +1,17 @@
 import { Router, Request, Response } from 'express';
 import { chat } from '../services/llmService.js';
+import { chatLimiter } from '../middleware/rateLimiter.js';
 
 const router = Router();
 
 /**
  * POST /api/chat/send
  * 一次性问答：接收用户消息，调用大模型，返回完整回复。
+ * 带 Redis 缓存 + 限流保护
  * Body: { message: string }
  * Response: { reply: string }
  */
-router.post('/send', async (req: Request, res: Response) => {
+router.post('/send', chatLimiter, async (req: Request, res: Response) => {
   try {
     const { message } = req.body;
 

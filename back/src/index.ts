@@ -8,6 +8,7 @@ config({ path: resolve(import.meta.dirname, '../../.env/.env.back') });
 import express from 'express';
 import cors from 'cors';
 import { initDb } from './lib/initDb.js';
+import redis from './lib/redis.js';
 import conversationsRouter from './routes/conversations.js';
 import authRouter from './routes/auth.js';
 import chatRouter from './routes/chat.js';
@@ -27,8 +28,17 @@ app.use((req, _res, next) => {
 });
 
 // 路由
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/api/health', async (_req, res) => {
+  let redisOk = false;
+  try {
+    await redis.ping();
+    redisOk = true;
+  } catch {}
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    redis: redisOk ? 'connected' : 'disconnected',
+  });
 });
 
 app.use('/api/auth', authRouter);
@@ -37,7 +47,6 @@ app.use('/api/chat', chatRouter);
 
 // 错误处理（必须放在路由之后）
 app.use(errorHandler);
-console.log("process", process.env.DB_PASSWORD);
 // 启动
 initDb()
   .then(() => {

@@ -10,20 +10,26 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@langchain/openai": "^1.5.1",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^4.21.0",
+    "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
+    "langchain": "^1.5.0",
     "mysql2": "^3.22.5",
     "openai": "^6.44.0",
+    "rate-limit-redis": "^5.0.0",
     "tsconfig-paths": "^4.2.0",
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/ioredis": "^4.28.10",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.0",
     "@types/uuid": "^10.0.0",
