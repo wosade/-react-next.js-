@@ -1,0 +1,128 @@
+@import '../../../styles/variables.less';
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: @spacing-3;
+  margin-bottom: @spacing-4;
+}
+
+.rowReverse {
+  flex-direction: row-reverse;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: @radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.avatarUser {
+  background: @bg-accent;
+  color: @white;
+}
+
+.avatarAgent {
+  background: @bg-hover;
+}
+
+.avatarTool {
+  background: @bg-tool-010;
+}
+
+.icon14 {
+  width: 14px;
+  height: 14px;
+}
+
+.iconSecondary {
+  width: 14px;
+  height: 14px;
+  color: @text-secondary;
+}
+
+.bubbleWrapper {
+  max-width: 75%;
+}
+
+.flexCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.itemsEnd {
+  align-items: flex-end;
+}
+
+.itemsStart {
+  align-items: flex-start;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: @spacing-2;
+  margin-bottom: @spacing-1;
+}
+
+.metaReverse {
+  flex-direction: row-reverse;
+}
+
+.roleLabel {
+  font-size: @text-11;
+  font-weight: 500;
+  color: @text-muted;
+}
+
+.timestamp {
+  font-size: @text-10;
+  color: @border-subtle;
+}
+
+.bubble {
+  display: inline-block;
+  padding: @spacing-2\.5 @spacing-4;
+  font-size: @text-sm;
+  line-height: 1.625;
+  border-radius: @radius-lg;
+}
+
+.bubbleUser {
+  background: @bg-accent;
+  color: @white;
+  border-bottom-right-radius: 4px;
+}
+
+.bubbleAgent {
+  background: @bg-secondary;
+  color: @text-primary;
+  border-bottom-left-radius: 4px;
+}
+
+.bubbleTool {
+  background: @bg-secondary;
+  color: @text-secondary;
+  font-family: @font-mono;
+  font-size: @text-xs;
+  border-bottom-left-radius: 4px;
+  border: 1px solid @border-default;
+}
+
+.content {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.toolCalls {
+  margin-top: @spacing-2;
+}
+
+.toolCalls > * + * {
+  margin-top: @spacing-1\.5;
+}

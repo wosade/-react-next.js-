@@ -1,0 +1,104 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.messageList {
+  flex: 1;
+  overflow-y: auto;
+  padding: @spacing-6;
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-4;
+}
+
+.loadingHint {
+  text-align: center;
+  color: @text-muted;
+  font-size: @text-sm;
+  margin: auto;
+}
+
+.userMsg {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.agentMsg {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.bubble {
+  max-width: 70%;
+  padding: @spacing-3 @spacing-4;
+  border-radius: @radius-md;
+  font-size: @text-sm;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.userMsg .bubble {
+  background: @color-accent-purple;
+  color: @white;
+  border-bottom-right-radius: @spacing-1;
+}
+
+.agentMsg .bubble {
+  background: @bg-secondary;
+  color: @text-primary;
+  border-bottom-left-radius: @spacing-1;
+}
+
+.inputBar {
+  display: flex;
+  align-items: flex-end;
+  gap: @spacing-3;
+  padding: @spacing-4 @spacing-6;
+  border-top: 1px solid @border-default;
+  background: @bg-surface;
+}
+
+.textarea {
+  flex: 1;
+  resize: none;
+  padding: @spacing-3 @spacing-4;
+  border: 1px solid @border-default;
+  border-radius: @radius-sm;
+  font-size: @text-sm;
+  font-family: inherit;
+  line-height: 1.5;
+  outline: none;
+  transition: @transition-fast;
+
+  &:focus {
+    border-color: @color-accent-purple;
+    box-shadow: 0 0 0 3px @bg-accent-purple-ring;
+  }
+}
+
+.sendBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: @radius-sm;
+  background: @color-accent-purple;
+  color: @white;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: @transition-fast;
+
+  &:hover:not(:disabled) {
+    background: @color-accent-purple-hover;
+  }
+
+  &:disabled {
+    background: @border-subtle;
+    cursor: not-allowed;
+  }
+}

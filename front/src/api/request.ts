@@ -4,7 +4,7 @@
  */
 
 import axios from 'axios';
-import { API_BASE_URL } from '@/lib/constants';
+import { API_BASE_URL } from '@env/env.development';
 
 const request = axios.create({
   baseURL: API_BASE_URL,

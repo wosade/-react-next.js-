@@ -1,0 +1,93 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: @bg-page;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 @spacing-6;
+  background: @bg-surface;
+  border-bottom: 1px solid @border-default;
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: @spacing-8;
+}
+
+.logo {
+  font-size: @text-lg;
+  font-weight: 700;
+  color: @text-primary;
+}
+
+.nav {
+  display: flex;
+  gap: @spacing-1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: @spacing-1\.5;
+  padding: @spacing-1\.5 @spacing-3;
+  border-radius: @radius-sm;
+  font-size: @text-sm;
+  color: @text-secondary;
+  text-decoration: none;
+  transition: @transition-fast;
+
+  &:hover {
+    background: @bg-hover;
+    color: @text-primary;
+  }
+}
+
+.navItemActive {
+  &:extend(.navItem);
+  background: @bg-accent-purple-010;
+  color: @color-accent-purple;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: @spacing-3;
+}
+
+.username {
+  font-size: @text-sm;
+  color: @text-secondary;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: @spacing-1;
+  padding: @spacing-1\.5 @spacing-3;
+  border: 1px solid @border-default;
+  border-radius: @radius-sm;
+  background: transparent;
+  color: @text-secondary;
+  font-size: @text-sm;
+  cursor: pointer;
+  transition: @transition-fast;
+
+  &:hover {
+    background: @bg-error-005;
+    border-color: @color-error;
+    color: @color-error;
+  }
+}
+
+.main {
+  flex: 1;
+  overflow: hidden;
+}

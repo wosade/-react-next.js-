@@ -1,0 +1,193 @@
+.sidebar {
+  width: 280px;
+  min-width: 280px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: @bg-surface;
+  border-right: 1px solid @border-default;
+}
+
+.topSection {
+  padding: @spacing-4;
+  padding-bottom: @spacing-3;
+}
+
+.newChatBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: @spacing-2;
+  width: 100%;
+  padding: @spacing-2\.5 @spacing-4;
+  border: 1px solid @border-default;
+  border-radius: @radius-sm;
+  background: @bg-surface;
+  color: @text-primary;
+  font-size: @text-sm;
+  font-weight: 500;
+  cursor: pointer;
+  transition: @transition-fast;
+
+  &:hover {
+    background: @bg-hover;
+    border-color: @color-accent-purple;
+    color: @color-accent-purple;
+  }
+}
+
+.plusIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.divider {
+  height: 1px;
+  background: @border-default;
+  margin: 0 @spacing-4;
+}
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+  padding: @spacing-2 0;
+}
+
+.listInner {
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-1;
+  padding: 0 @spacing-2;
+}
+
+.convItem,
+.convItemActive {
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-1;
+  width: 100%;
+  padding: @spacing-3;
+  border: none;
+  border-radius: @radius-sm;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: @transition-fast;
+}
+
+.convItem {
+  &:hover {
+    background: @bg-hover;
+  }
+}
+
+.convItemActive {
+  background: @bg-accent-purple-010;
+}
+
+.convHeader {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: @spacing-2;
+}
+
+.convIcon,
+.convIconActive {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.convIcon {
+  color: @text-muted;
+}
+
+.convIconActive {
+  color: @color-accent-purple;
+}
+
+.convTitleActive,
+.convTitleInactive {
+  font-size: @text-sm;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.convTitleActive {
+  color: @color-accent-purple;
+}
+
+.convTitleInactive {
+  color: @text-primary;
+}
+
+.convPreview {
+  font-size: @text-xs;
+  color: @text-muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.convMeta {
+  display: flex;
+  align-items: center;
+  gap: @spacing-1;
+}
+
+.convTimeIcon {
+  width: 12px;
+  height: 12px;
+  color: @border-subtle;
+}
+
+.convTime {
+  font-size: @text-10;
+  color: @border-subtle;
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 2px;
+  border: none;
+  background: transparent;
+  color: @text-muted;
+  cursor: pointer;
+  border-radius: @radius-sm;
+
+  &:hover {
+    color: @color-error;
+    background: @bg-error-005;
+  }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: @spacing-8 @spacing-4;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 32px;
+  height: 32px;
+  color: @border-subtle;
+  margin-bottom: @spacing-3;
+}
+
+.emptyText {
+  font-size: @text-xs;
+  color: @text-muted;
+  line-height: 1.625;
+}
