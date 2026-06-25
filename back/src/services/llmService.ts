@@ -48,48 +48,52 @@ type weather=z.infer<typeof WeatherSchema>
  * 一次性问答：发送消息列表，返回模型的完整回复文本。
  * 不做流式、不调用工具。
  */
-const model = new ChatOpenAI({
-  modelName: "deepseek-ai/DeepSeek-V4-Flash",
-  apiKey: "sk-hlktlwlhkbdwviqstrebieqggwgkutvabpyhhcqwydmniwua",
-  configuration: {
-    baseURL: "https://api.siliconflow.cn/v1",
-  },
-});
-const stream=await model.stream("讲个笑话")
+// const model = new ChatOpenAI({
+//   modelName: "deepseek-ai/DeepSeek-V4-Flash",
+//   apiKey: "sk-hlktlwlhkbdwviqstrebieqggwgkutvabpyhhcqwydmniwua",
+//   configuration: {
+//     baseURL: "https://api.siliconflow.cn/v1",
+//   },
+// });
+// const stream=await model.stream("讲个笑话")
 // for await(const chunk of stream){
 //   // 不加 /n打印
 //   process.stdout.write(chunk.content as string)
 // }
 // 结构化输出让输出为规定的json
-const weatherSchema={
-  pos:z.string().describe('位置'),
-  weather:z.string().describe('温度')
-}
-const structerStream=model.withStructuredOutput(weatherSchema)
-const res=await structerStream.invoke('北京天气怎么样')
-console.log(res)
+// const weatherSchema={
+//   pos:z.string().describe('位置'),
+//   weather:z.string().describe('温度')
+// }
+// const structerStream=model.withStructuredOutput(weatherSchema)
+// const res=await structerStream.invoke('北京天气怎么样')
+// console.log(res)
 import { getCachedResponse, setCachedResponse } from './llmCache.js';
 
-export async function chat(messages: { role: string; content: string }[]): Promise<string> {
+export async function chat(
+  messages: { role: string; content: string }[],
+): Promise<AsyncIterable<any>> {
   // 1. 查 Redis 缓存，命中则直接返回
-  const cached = await getCachedResponse(messages);
-  if (cached) {
-    return cached;
-  }
+  // const cached = await getCachedResponse(messages);
+  // if (cached) {
+  //   return cached;
+  // }
 
   // 2. 未命中 → 调 LLM
-  const response = await client.chat.completions.create({
+  const stream = await client.chat.completions.create({
     model: MODEL,
     messages: messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+    stream: true,
   });
-  console.log(response.choices[0].message);
-  const reply = response.choices[0]?.message?.content || '';
-
-  // 3. 写入缓存（仅缓存有意义的回复）
-  if (reply) {
-    await setCachedResponse(messages, reply);
+  for await(const chunck of stream){
+    console.log(chunck.choices[0].delta.content)
   }
+  return stream;
+  // // 3. 写入缓存（仅缓存有意义的回复）
+  // if (reply) {
+  //   await setCachedResponse(messages, reply);
+  // }
 
-  return reply;
+  // return reply;
 }
 // chat([{role:'user',content:'123'}])
