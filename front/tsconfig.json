@@ -14,11 +14,13 @@
     "jsx": "react-jsx",
     "incremental": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@env/*": ["./env/*"] 
     }
   },
   "include": [
-    "src"
+    "src",
+    "env"
   ],
   "exclude": ["node_modules"]
 }

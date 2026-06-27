@@ -85,9 +85,7 @@ export async function chat(
     messages: messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
     stream: true,
   });
-  for await(const chunck of stream){
-    console.log(chunck.choices[0].delta.content)
-  }
+  
   return stream;
   // // 3. 写入缓存（仅缓存有意义的回复）
   // if (reply) {
@@ -96,4 +94,3 @@ export async function chat(
 
   // return reply;
 }
-// chat([{role:'user',content:'123'}])

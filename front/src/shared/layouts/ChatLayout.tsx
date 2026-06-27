@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import Sidebar from '@/features/chat/pages/sidebar';
+import { Sidebar } from '@/features/chat/pages';
 import styles from './ChatLayout.module.less';
 
 export default function ChatLayout() {

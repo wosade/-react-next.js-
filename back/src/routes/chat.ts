@@ -35,7 +35,7 @@ router.post('/send', chatLimiter, async (req: Request, res: Response) => {
       const content=chunck.choices[0].delta.content
       if(content){
         fullReply+=content
-        res.write(`data:${JSON.stringify({content})}\n`)
+        res.write(`data:${JSON.stringify({content})}\n\n`)
       }
     }
 

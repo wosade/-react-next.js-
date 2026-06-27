@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { Send } from 'lucide-react';
 import request from '@/api/request';
 import styles from './index.module.less';
+import {fetchEventSource} from '@microsoft/fetch-event-source'
+import { Button, message } from 'antd'
 
 interface Message {
   id: string;
@@ -23,7 +25,7 @@ export default function ChatWindow() {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
   };
-
+// 元素变页面不渲染
   const abortRef = useRef<AbortController | null>(null);
 
   const handleSend = async () => {
@@ -39,30 +41,62 @@ export default function ChatWindow() {
     };
     setMessages((prev) => [...prev, userMsg]);
     scrollToBottom();
-
+    // 创建 agent返回的消息
+    const agentId=`a-${Date.now()}`;
+    // 存单条agent的消息
+    const agentMessage:Message={
+      id:agentId,
+      role:'agent',
+      content:'',
+      timestamp:Date.now(),
+    }
+    setMessages((prev)=>[...prev,agentMessage])
     setLoading(true);
-    try {
-      const res = await request.post<{ reply: string }>('/chat/send', {
-        message: content,
-      });
-
-      const agentMsg: Message = {
-        id: `a-${Date.now()}`,
-        role: 'agent',
-        content: res.data.reply,
-        timestamp: Date.now(),
-      };
-      setMessages((prev) => [...prev, agentMsg]);
-    } catch (err: any) {
-      const errorMsg: Message = {
-        id: `e-${Date.now()}`,
-        role: 'agent',
-        content: `❌ 调用失败: ${err?.response?.data?.error || err?.message || '未知错误'}`,
-        timestamp: Date.now(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    } finally {
-      setLoading(false);
+    // 用fetch-eventsoruce实现ai流式对话效果
+    const Controller=new AbortController()
+    abortRef.current=Controller
+    let fullcontent=""
+    try{
+      await fetchEventSource('/api/chat/send',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':`Bearer ${localStorage.getItem('token')}` 
+        },
+        body:JSON.stringify({message:content}),
+        signal:Controller.signal,
+        onmessage(e){
+          const data=JSON.parse(e.data);
+          if(data.content){
+            fullcontent+=data.content
+            agentMessage.content=fullcontent
+            setMessages((perv)=>
+              perv.map(item=>item.id===agentMessage.id?agentMessage:item)
+            )
+          }
+        },
+        onerror(error){
+          throw error
+        }
+      })
+    } catch(error:any){
+      if(error.name==='AbortError'){
+        return
+      }
+      setMessages((prev)=>[
+        ...prev.filter(item=>item.id!==agentMessage.id),
+        {
+          id:`e-${Date.now}`,
+          role:'agent',
+          content:`调用失败:${error.message}`,
+          timestamp:Date.now()
+        }
+      ]
+      )
+    }finally{
+      setLoading(false)
+      abortRef.current.abort()
+      abortRef.current=null;
       scrollToBottom();
     }
   };
