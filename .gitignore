@@ -1,17 +1,2 @@
 node_modules/
-.next/
 dist/
-.env/*
-!.env/*.example
-*.local
-.agents/skills/find-skills/SKILL.md
-skills-lock.json
-.agents/skills/frontend-design/LICENSE.txt
-.gitignore
-.agents/skills/frontend-design/SKILL.md
-.claude/skills/find-skills/SKILL.md
-.claude/skills/frontend-design/LICENSE.txt
-.claude/skills/frontend-design/SKILL.md
-front/CLAUDE.md
-front/.gitignore
-.gitignore
