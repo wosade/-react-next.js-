@@ -42,7 +42,9 @@ function toMessage(row: MessageRow): Message {
     conversationId: row.conversation_id,
     role: row.role as Message['role'],
     content: row.content,
-    toolCalls: row.tool_calls ? JSON.parse(row.tool_calls) : undefined,
+    toolCalls: row.tool_calls
+      ? (typeof row.tool_calls === 'string' ? JSON.parse(row.tool_calls) : row.tool_calls)
+      : undefined,
     createdAt: row.created_at,
   };
 }

@@ -19,7 +19,9 @@ function toStep(row: StepRow): Step {
     messageId: row.message_id,
     stepOrder: row.step_order,
     toolName: row.tool_name,
-    toolInput: row.tool_input ? JSON.parse(row.tool_input) : {},
+    toolInput: row.tool_input
+      ? (typeof row.tool_input === 'string' ? JSON.parse(row.tool_input) : row.tool_input)
+      : {},
     toolOutput: row.tool_output ?? "",
     status: row.status as Step["status"],
     createdAt: row.created_at,

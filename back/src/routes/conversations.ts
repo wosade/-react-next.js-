@@ -35,6 +35,7 @@ router.post('/', async (req: AuthRequest, res, next) => {
 router.get('/:id', async (req: AuthRequest, res, next) => {
   try {
     const conv = await conversationService.getConversation(req.params.id as string);
+    conv.messages = await conversationService.getMessagesWithSteps(req.params.id as string);
     res.json({ data: conv });
   } catch (err) {
     next(err);

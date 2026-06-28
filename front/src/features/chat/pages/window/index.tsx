@@ -1,16 +1,18 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Send } from 'lucide-react';
-import request from '@/api/request';
+import { fetchConversation } from '@/features/chat/api/conversation';
+import ToolCallCard from '@/features/chat/components/ToolCallCard';
+import type { ToolCall } from '@/shared/types';
 import styles from './index.module.less';
 import {fetchEventSource} from '@microsoft/fetch-event-source'
-import { Button, message } from 'antd'
 
 interface Message {
   id: string;
   role: 'user' | 'agent';
   content: string;
   timestamp: number;
+  toolCalls?: ToolCall[];
 }
 
 export default function ChatWindow() {
@@ -19,6 +21,32 @@ export default function ChatWindow() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // 切换会话时加载历史消息
+  useEffect(() => {
+    if (!sessionId) return;
+    fetchConversation(sessionId)
+      .then((conv: any) => {
+        const list = conv.messages ?? [];
+        setMessages(
+          list.map((m: any) => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            timestamp: new Date(m.createdAt).getTime(),
+            toolCalls: m.steps?.map((s: any, i: number) => ({
+              id: `${m.id}-step-${i}`,
+              name: s.toolName,
+              args: s.toolInput,
+              result: s.toolOutput,
+              status: s.status === 'success' ? 'done' as const : 'error' as const,
+            })),
+          })),
+        );
+        scrollToBottom();
+      })
+      .catch((err) => console.error('加载会话详情失败:', err));
+  }, [sessionId]);
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -63,15 +91,30 @@ export default function ChatWindow() {
           'Content-Type':'application/json',
           'Authorization':`Bearer ${localStorage.getItem('token')}` 
         },
-        body:JSON.stringify({message:content}),
+        body:JSON.stringify({message:content, conversationId: sessionId}),
         signal:Controller.signal,
         onmessage(e){
           const data=JSON.parse(e.data);
-          if(data.content){
+          // 流式文本
+          if(data.type === 'content' && data.content){
             fullcontent+=data.content
             agentMessage.content=fullcontent
-            setMessages((perv)=>
-              perv.map(item=>item.id===agentMessage.id?agentMessage:item)
+            setMessages((prev)=>
+              prev.map(item=>item.id===agentMessage.id?{...agentMessage}:item)
+            )
+          }
+          // 工具步骤
+          if(data.type === 'tool_step' && data.step){
+            const tc: ToolCall = {
+              id: `${agentId}-step-${Date.now()}`,
+              name: data.step.toolName,
+              args: data.step.toolInput,
+              result: data.step.toolOutput,
+              status: data.step.status === 'success' ? 'done' : 'error',
+            };
+            agentMessage.toolCalls = [...(agentMessage.toolCalls ?? []), tc];
+            setMessages((prev)=>
+              prev.map(item=>item.id===agentMessage.id?{...agentMessage, toolCalls: agentMessage.toolCalls}:item)
             )
           }
         },
@@ -124,6 +167,13 @@ export default function ChatWindow() {
             }
           >
             <div className={styles.bubble}>{msg.content}</div>
+            {msg.toolCalls && msg.toolCalls.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {msg.toolCalls.map((tc) => (
+                  <ToolCallCard key={tc.id} toolCall={tc} />
+                ))}
+              </div>
+            )}
           </div>
         ))}
         {loading && (
