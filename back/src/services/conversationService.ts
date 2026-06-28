@@ -1,6 +1,8 @@
 import * as conversationModel from '../models/conversation.js';
 import { AppError } from '../middleware/errorHandler.js';
 import type { Conversation, ConversationDetail, Message } from '../types/index.js';
+import * as stepModel from "../models/step.js";
+import type { MessageWithSteps } from "../types/index.js";
 
 /** 获取当前用户的会话列表 */
 export async function getConversationList(userId: string): Promise<Conversation[]> {
@@ -51,4 +53,23 @@ export async function addMessage(
     throw new AppError(404, '会话不存在');
   }
   return message;
+}
+
+export async function getMessagesWithSteps(
+  conversationId: string,
+): Promise<MessageWithSteps[]> {
+  const messages = await conversationModel.findMessages(conversationId);
+
+  const agentMessageIds = messages
+    .filter((m) => m.role === 'agent')
+    .map((m) => m.id);
+
+  const stepsMap = await stepModel.findStepsByMessageIds(agentMessageIds);
+
+  return messages.map((msg): MessageWithSteps => {
+    if (msg.role === 'agent') {
+      return { ...msg, steps: stepsMap.get(msg.id) ?? [] };
+    }
+    return msg;
+  });
 }

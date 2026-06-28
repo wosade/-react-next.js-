@@ -36,3 +36,24 @@ export interface Conversation {
 export interface ConversationDetail extends Conversation {
   messages: Message[];
 }
+
+/** 步骤记录 — Agent 循环中收集到临时数组，用于批量插入 steps 表 */
+export interface StepRecord {
+  toolName: string;
+  toolInput: Record<string, unknown>;
+  toolOutput: string;
+  status: 'success' | 'error';
+}
+
+/** 数据库 steps 表的完整行 */
+export interface Step extends StepRecord {
+  id: string;
+  messageId: string;
+  stepOrder: number;
+  createdAt: string;
+}
+
+/** 查询历史时，agent 消息附带 steps */
+export interface MessageWithSteps extends Message {
+  steps?: Step[];
+}

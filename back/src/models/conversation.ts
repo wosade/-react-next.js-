@@ -154,11 +154,11 @@ export async function addMessage(
   const id = generateId();
   const now = nowISO();
 
-  await pool.execute(
+  const res=await pool.execute(
     'INSERT INTO messages (id, conversation_id, role, content, tool_calls, created_at) VALUES (?, ?, ?, ?, ?, ?)',
     [id, conversationId, msg.role, msg.content, msg.toolCalls ? JSON.stringify(msg.toolCalls) : null, now],
   );
-
+  console.log(res)
   // 同步更新会话的 lastMessage
   const preview = msg.content.slice(0, 20) + (msg.content.length > 20 ? '…' : '');
   await pool.execute(

@@ -27,7 +27,7 @@ export async function initDb(): Promise<void> {
       )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
   //存储每个对话的具体内容
-   await pool.execute(`
+  await pool.execute(`
     CREATE TABLE IF NOT EXISTS messages (
       id              VARCHAR(36)  NOT NULL PRIMARY KEY,
       conversation_id VARCHAR(36)  NOT NULL,
@@ -36,6 +36,20 @@ export async function initDb(): Promise<void> {
       tool_calls      JSON         NULL,
       created_at      VARCHAR(24)  NOT NULL,
       FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+  // 存储 AI 回复的工具调用步骤
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS steps (
+      id          VARCHAR(36)  NOT NULL PRIMARY KEY,
+      message_id  VARCHAR(36)  NOT NULL,
+      step_order  INT          NOT NULL,
+      tool_name   VARCHAR(100) NOT NULL,
+      tool_input  JSON         NULL,
+      tool_output TEXT         NULL,
+      status      VARCHAR(10)  NOT NULL DEFAULT 'success',
+      created_at  VARCHAR(24)  NOT NULL,
+      FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
 }

@@ -1,11 +1,12 @@
 import { chatWithTools } from './llmService.js';
 import { executeTool, TOOL_DEFINITIONS } from './tools/index.js';
+import type { StepRecord } from '../types/index.js';
 
 export type AgentEvent =
   | { type: 'status'; tool: string }
   | { type: 'content'; content: string }
   | { type: 'done' }
-  | { type: 'error'; message: string };
+  | { type: 'error'; message: string }|{type:'tool_step';step:StepRecord};
 
 // Agent 循环：LLM 调用工具 → 拿结果 → 再调 LLM → 直到输出最终文本
 export async function* runAgent(
@@ -55,7 +56,8 @@ export async function* runAgent(
           const entry = toolCallMap.get(idx)!;
           if (tc.id) entry.id = tc.id;
           if (tc.function?.name) entry.name += tc.function.name;
-          if (tc.function?.arguments) entry.args += tc.function.arguments;
+          if (tc.function?.arguments) 
+            entry.args += tc.function.arguments;
         }
       }
     }
@@ -82,12 +84,28 @@ export async function* runAgent(
           args = JSON.parse(tc.args);
         } catch {}
 
-        const result = await executeTool(tc.name, args);
-
+        let toolOutput:string=''
+        let status:'success'|'error'
+        try{
+          toolOutput=await executeTool(tc.name,args)
+          status='success'
+        } catch(err:any){
+          toolOutput=err.message||String(err);
+          status='error'
+        }
+        yield{
+          type:'tool_step',
+          step:{
+            toolName:tc.name,
+            toolInput:args,
+            toolOutput,
+            status
+          }
+        }
         messages.push({
           role: 'tool',
           tool_call_id: tc.id,
-          content: result,
+          content: toolOutput,
         });
       }
 
