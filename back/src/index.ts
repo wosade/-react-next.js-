@@ -1,9 +1,9 @@
 import { config } from 'dotenv';
 import { resolve } from 'path';
 
-// 从项目根目录 .env/ 加载配置
-config({ path: resolve(import.meta.dirname, '../../.env/.env') });
-config({ path: resolve(import.meta.dirname, '../../.env/.env.back') });
+// 从 back/.env/ 加载配置
+config({ path: resolve(import.meta.dirname, '../.env/.env') });
+config({ path: resolve(import.meta.dirname, '../.env/.env.back') });
 
 import express from 'express';
 import cors from 'cors';

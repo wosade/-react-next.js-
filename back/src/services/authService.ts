@@ -10,7 +10,7 @@ import { AppError } from '../middleware/errorHandler.js';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
-
+console.log(JWT_EXPIRES_IN)
 interface TokenPair {
   token: string;
   refreshToken: string;

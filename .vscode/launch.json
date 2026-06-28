@@ -32,7 +32,7 @@
         "<node_internals>/**",
         "${workspaceFolder}/**/node_modules/**"
       ],
-      "envFile": "${workspaceFolder}/.env/.env.back",
+      "envFile": "${workspaceFolder}/back/.env/.env.back",
       "restart": true
     }
   ]
