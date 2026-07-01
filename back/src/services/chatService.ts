@@ -17,7 +17,16 @@ export async function* runAgent(
     {
       role: 'system',
       content:
-        '你是智能助手，可以使用工具帮用户查询信息。查到结果后用自己的话回复用户，不要编造数据。',
+        '你是智能助手，可以使用工具帮用户查询信息。\n\n' +
+        '可用工具：\n' +
+        '1. get_weather — 查天气\n' +
+        '2. search_knowledge — 搜索知识库中的文档（公司制度、手册、产品文档等内部知识优先用此工具检索）\n' +
+        '3. query_database — 查询业务数据库（统计、用户、订单等）\n\n' +
+        '原则：\n' +
+        '- 内部知识类问题必须先用 search_knowledge 检索，再用文档内容回答\n' +
+        '- 统计数据类问题用 query_database 查询\n' +
+        '- 查到的数据如实汇报，不要编造\n' +
+        '- 用自己的话组织语言，不要直接复制粘贴文档原文',
     },
     ...history,
     { role: 'user', content: userMessage },

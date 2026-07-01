@@ -10,5 +10,5 @@ export async function getWeather(city: string): Promise<string> {
   };
   const result = mockData[city];
   if (result) return `${city}今日天气：${result}`;
-  return `${city}今日天气：晴转多云，22-30°C，风力 3级`;
+  return `抱歉当前无法查询该城市的天气，请稍后重试`;
 }

@@ -12,6 +12,7 @@ import redis from './lib/redis.js';
 import conversationsRouter from './routes/conversations.js';
 import authRouter from './routes/auth.js';
 import chatRouter from './routes/chat.js';
+import knowledgeRouter from './routes/knowledge.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -44,6 +45,7 @@ app.get('/api/health', async (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/conversations', conversationsRouter);
 app.use('/api/chat', chatRouter);
+app.use('/api/knowledge', knowledgeRouter);
 
 // 错误处理（必须放在路由之后）
 app.use(errorHandler);

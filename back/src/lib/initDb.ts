@@ -52,4 +52,17 @@ export async function initDb(): Promise<void> {
       FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
+  // 知识库文档元信息（向量存在 Qdrant）
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS documents (
+      id          VARCHAR(36)  NOT NULL PRIMARY KEY,
+      user_id     VARCHAR(36)  NOT NULL,
+      name        VARCHAR(255) NOT NULL,
+      type        VARCHAR(20)  NOT NULL,
+      size        INT          NOT NULL DEFAULT 0,
+      chunk_count INT          NOT NULL DEFAULT 0,
+      created_at  VARCHAR(24)  NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
 }
