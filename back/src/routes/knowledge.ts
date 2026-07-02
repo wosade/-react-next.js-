@@ -37,6 +37,7 @@ const upload = multer({
 });
 
 // POST /api/knowledge/upload
+// 存入文件 文件向量化 写入数据库
 router.post(
   '/upload',
   requireJwt,

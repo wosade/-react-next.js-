@@ -1,82 +1,102 @@
-import { getWeather } from './weather.js';
-import { searchKnowledgeTool } from './searchKnowledge.js';
-import { queryDatabaseTool } from './queryDatabase.js';
+import { z } from 'zod';
 
-// 告诉大模型有哪些工具、什么参数
-export const TOOL_DEFINITIONS = [
-  {
-    type: 'function' as const,
-    function: {
-      name: 'get_weather',
-      description: '查询指定城市的实时天气信息',
-      parameters: {
-        type: 'object' as const,
-        properties: {
-          city: {
-            type: 'string',
-            description: '城市名称，如 北京、上海、深圳',
-          },
-        },
-        required: ['city'],
-      },
-    },
-  },
-  {
-    type: 'function' as const,
-    function: {
-      name: 'search_knowledge',
-      description:
-        '搜索知识库中的文档内容。当用户询问公司制度、操作手册、产品文档等内部知识时，用此工具检索相关文档片段。',
-      parameters: {
-        type: 'object' as const,
-        properties: {
-          query: {
-            type: 'string',
-            description: '搜索关键词或问题，如"请假流程"、"退款政策"',
-          },
-          topK: {
-            type: 'integer',
-            description: '返回最相关的文档片段数量，默认 5，最大 10',
-          },
-        },
-        required: ['query'],
-      },
-    },
-  },
-  {
-    type: 'function' as const,
-    function: {
-      name: 'query_database',
-      description:
-        '查询业务数据库。当用户询问统计数据、用户信息、订单记录等数据库中的信息时，用此工具执行 SQL 查询。仅支持 SELECT。',
-      parameters: {
-        type: 'object' as const,
-        properties: {
-          sql: {
-            type: 'string',
-            description:
-              'SELECT 查询语句，如 "SELECT COUNT(*) FROM users WHERE created_at > \'2026-01-01\'"',
-          },
-        },
-        required: ['sql'],
-      },
-    },
-  },
-];
+// 导入各工具的 Schema + Definition + Handler
+import { weatherSchema, weatherDefinition, getWeather } from './weather.js';
+import {
+  searchKnowledgeSchema,
+  searchKnowledgeDefinition,
+  searchKnowledgeTool,
+} from './searchKnowledge.js';
+import {
+  queryDatabaseSchema,
+  queryDatabaseDefinition,
+  queryDatabaseTool,
+} from './queryDatabase.js';
 
-// 根据工具名分发执行
+// ── 工具注册表类型 ────────────────────────────────────────
+
+type ToolHandler = (args: any) => Promise<string>;
+
+interface ToolDefinition {
+  type: 'function';
+  function: {
+    name: string;
+    description: string;
+    parameters: {
+      type: 'object';
+      properties: Record<string, { type: string; description: string }>;
+      required: string[];
+    };
+  };
+}
+
+interface ToolEntry {
+  schema: z.ZodTypeAny;
+  definition: ToolDefinition;
+  handler: ToolHandler;
+}
+
+// ── 注册所有工具 ──────────────────────────────────────────
+// 新增工具只需在这里加一行即可
+
+const toolRegistry = new Map<string, ToolEntry>([
+  [
+    'get_weather',
+    { schema: weatherSchema, definition: weatherDefinition, handler: (args) => getWeather(args) },
+  ],
+  [
+    'search_knowledge',
+    { schema: searchKnowledgeSchema, definition: searchKnowledgeDefinition, handler: (args) => searchKnowledgeTool(args) },
+  ],
+  [
+    'query_database',
+    { schema: queryDatabaseSchema, definition: queryDatabaseDefinition, handler: (args) => queryDatabaseTool(args) },
+  ],
+]);
+
+// ── 自动生成 OpenAI Tool Definitions ──────────────────────
+
+export const TOOL_DEFINITIONS = Array.from(toolRegistry.values()).map(
+  (entry) => entry.definition,
+);
+
+// ── 带 Zod 校验的工具执行入口 ──────────────────────────────
+
+/**
+ * 执行工具调用
+ *
+ * 1. 用 Zod Schema 校验 LLM 传过来的参数
+ * 2. 校验失败 → 返回结构化的错误信息（帮助 LLM 自我纠正）
+ * 3. 校验通过 → 调用 handler 执行
+ */
 export async function executeTool(
   name: string,
-  args: Record<string, any>,
+  rawArgs: Record<string, any>,
 ): Promise<string> {
-  switch (name) {
-    case 'get_weather':
-      return getWeather(args.city);
-    case 'search_knowledge':
-      return searchKnowledgeTool(args as { query: string; topK?: number });
-    case 'query_database':
-      return queryDatabaseTool(args as { sql: string });
-    default:
-      return `未知工具: ${name}`;
+  const entry = toolRegistry.get(name);
+  if (!entry) {
+    return `❌ 未知工具: "${name}"。可用工具: ${[...toolRegistry.keys()].join(', ')}`;
   }
+
+  // ─── Zod 校验 ───
+  const result = entry.schema.safeParse(rawArgs);
+  if (!result.success) {
+    // 格式化错误信息，方便 LLM 理解并重试
+    const issues = (result.error.issues as Array<{ path: (string | number)[]; message: string }>)
+      .map((i) => `  - \`${i.path.join('.') || '(root)'}\`: ${i.message}`)
+      .join('\n');
+    return (
+      `❌ 调用 "${name}" 参数校验失败:\n${issues}\n\n` +
+      `请根据 Schema 修正参数后重新调用。`
+    );
+  }
+
+  // ─── 执行 ───
+  return entry.handler(result.data);
+}
+
+// ── 辅助函数：按名称获取工具 Schema（调试/文档用） ─────────
+
+export function getToolSchema(name: string): z.ZodTypeAny | undefined {
+  return toolRegistry.get(name)?.schema;
 }

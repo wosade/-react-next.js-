@@ -61,7 +61,7 @@ export function chunkText(
     if (!split) continue;
     if (current && (current + split).length > chunkSize) {
       chunks.push(current.trim());
-      // 带上 overlap 防止上下文断裂
+      // 带上 overlap 防止上下文断裂 让每次对话的前缀为上一句的后50 保证信息不因分块丢失
       current = current.slice(-chunkOverlap) + split;
     } else {
       current += (current ? ' ' : '') + split;
