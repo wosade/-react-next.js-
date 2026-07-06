@@ -44,19 +44,6 @@ const ACTIVE_TOOLS: ToolDef[] = [
       { name: 'count', type: 'number', required: false, desc: '返回条数，默认 5，最大 8' },
     ],
   },
-];
-
-const PLANNED_TOOLS: ToolDef[] = [
-  {
-    name: 'code_executor',
-    label: '代码执行',
-    icon: <Wrench size={18} />,
-    desc: '在隔离沙箱中执行 Python / JS 代码，用于数据分析、计算。计划接入 Docker executor。',
-    params: [
-      { name: 'language', type: 'string', required: true, desc: 'python | javascript' },
-      { name: 'code', type: 'string', required: true, desc: '代码内容' },
-    ],
-  },
   {
     name: 'email_sender',
     label: '邮件发送',
@@ -68,6 +55,20 @@ const PLANNED_TOOLS: ToolDef[] = [
       { name: 'body', type: 'string', required: true, desc: '邮件正文' },
     ],
   },
+];
+
+const PLANNED_TOOLS: ToolDef[] = [
+//   {
+//     name: 'code_executor',
+//     label: '代码执行',
+//     icon: <Wrench size={18} />,
+//     desc: '在隔离沙箱中执行 Python / JS 代码，用于数据分析、计算。计划接入 Docker executor。',
+//     params: [
+//       { name: 'language', type: 'string', required: true, desc: 'python | javascript' },
+//       { name: 'code', type: 'string', required: true, desc: '代码内容' },
+//     ],
+//   },
+  
 ];
 
 function ToolCard({ tool, disabled }: { tool: ToolDef; disabled?: boolean }) {
@@ -112,12 +113,12 @@ export default function ToolsPage() {
         </div>
       </section>
 
-      <section>
+      {/* <section>
         <h2 className={styles.secTitle}>计划中</h2>
         <div className={styles.grid}>
           {PLANNED_TOOLS.map((t) => <ToolCard key={t.name} tool={t} disabled />)}
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

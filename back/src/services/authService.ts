@@ -101,5 +101,13 @@ export async function getUserById(id: string) {
   if (!user) {
     throw new AppError(404, '用户不存在');
   }
-  return { id: user.id, username: user.username };
+  return {
+    id: user.id,
+    username: user.username,
+    smtpHost: user.smtpHost || '',
+    smtpPort: user.smtpPort || 587,
+    smtpUser: user.smtpUser || '',
+    smtpPass: user.smtpPass || '',
+    smtpFrom: user.smtpFrom || '',
+  };
 }

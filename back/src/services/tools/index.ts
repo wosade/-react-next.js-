@@ -25,7 +25,7 @@ import {
 
 // ── 工具注册表类型 ────────────────────────────────────────
 
-type ToolHandler = (args: any) => Promise<string>;
+type ToolHandler = (args: any, userId?: string) => Promise<string>;
 
 interface ToolDefinition {
   type: 'function';
@@ -68,7 +68,7 @@ const toolRegistry = new Map<string, ToolEntry>([
   ],
   [
     'send_email',
-    { schema: sendEmailSchema, definition: sendEmailDefinition, handler: (args) => sendEmail(args) },
+    { schema: sendEmailSchema, definition: sendEmailDefinition, handler: (args, userId) => sendEmail(args, userId!) },
   ],
 ]);
 
@@ -90,6 +90,7 @@ export const TOOL_DEFINITIONS = Array.from(toolRegistry.values()).map(
 export async function executeTool(
   name: string,
   rawArgs: Record<string, any>,
+  userId?: string,
 ): Promise<string> {
   const entry = toolRegistry.get(name);
   if (!entry) {
@@ -110,7 +111,7 @@ export async function executeTool(
   }
 
   // ─── 执行 ───
-  return entry.handler(result.data);
+  return entry.handler(result.data, userId);
 }
 
 // ── 辅助函数：按名称获取工具 Schema（调试/文档用） ─────────

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Settings, User, Key, Palette, Server, Shield, Check, ChevronRight } from 'lucide-react';
+import { Settings, User, Key, Palette, Server, Shield, Check, ChevronRight, Mail } from 'lucide-react';
 import { useAuth } from '@/shared/contexts/AuthContext';
-import { getMe } from '@/features/auth/api';
+import { getMe, updateSmtp } from '@/features/auth/api';
+import type { UserProfile, SmtpConfig } from '@/features/auth/api';
 import styles from './index.module.less';
 
 type Tab = 'profile' | 'api' | 'appearance' | 'advanced';
@@ -13,24 +14,45 @@ const TABS: { key: Tab; icon: React.ReactNode; label: string }[] = [
   { key: 'advanced', icon: <Server size={15} />, label: '高级' },
 ];
 
-interface Profile {
-  id: string;
-  username: string;
-}
-
 export default function SettingsPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>('profile');
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [saved, setSaved] = useState(false);
+
+  const [smtp, setSmtp] = useState<SmtpConfig>({
+    host: 'smtp.qq.com',
+    port: 587,
+    user: '',
+    pass: '',
+    from: '',
+  });
 
   useEffect(() => {
     if (tab === 'profile') {
-      getMe().then(setProfile).catch(() => {});
+      getMe().then((p) => {
+        setProfile(p);
+        setSmtp({
+          host: p.smtpHost || 'smtp.qq.com',
+          port: p.smtpPort || 587,
+          user: p.smtpUser || '',
+          pass: p.smtpPass || '',
+          from: p.smtpFrom || p.smtpUser || '',
+        });
+      }).catch(() => {});
     }
   }, [tab]);
 
   const flash = () => { setSaved(true); setTimeout(() => setSaved(false), 1800); };
+
+  const handleSaveSmtp = async () => {
+    try {
+      await updateSmtp(smtp);
+      flash();
+    } catch (err: any) {
+      alert(err?.response?.data?.error || '保存失败');
+    }
+  };
 
   return (
     <div className={styles.page}>
@@ -85,6 +107,56 @@ export default function SettingsPage() {
                 </label>
                 <button onClick={flash} className={styles.btn}>
                   {saved ? <><Check size={13} /> 已保存</> : '保存修改'}
+                </button>
+              </div>
+
+              <h3 className={styles.secTitle} style={{ marginTop: 24 }}><Mail size={14} /> SMTP 邮件配置</h3>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px' }}>
+                配置后，AI 助手将使用您的邮箱发送邮件。QQ 邮箱需在设置中开启 SMTP 服务并获取授权码。
+              </p>
+              <div className={styles.form}>
+                <label className={styles.field}>
+                  <span className={styles.lbl}>SMTP 服务器</span>
+                  <input
+                    type="text"
+                    className={styles.inp}
+                    placeholder="smtp.qq.com"
+                    value={smtp.host}
+                    onChange={(e) => setSmtp({ ...smtp, host: e.target.value })}
+                  />
+                </label>
+                <label className={styles.field}>
+                  <span className={styles.lbl}>端口</span>
+                  <input
+                    type="number"
+                    className={styles.inp}
+                    placeholder="587"
+                    value={smtp.port}
+                    onChange={(e) => setSmtp({ ...smtp, port: Number(e.target.value) })}
+                  />
+                </label>
+                <label className={styles.field}>
+                  <span className={styles.lbl}>邮箱地址</span>
+                  <input
+                    type="email"
+                    className={styles.inp}
+                    placeholder="你的QQ邮箱@qq.com"
+                    value={smtp.user}
+                    onChange={(e) => setSmtp({ ...smtp, user: e.target.value, from: e.target.value })}
+                  />
+                </label>
+                <label className={styles.field}>
+                  <span className={styles.lbl}>SMTP 授权码</span>
+                  <input
+                    type="password"
+                    className={styles.inp}
+                    placeholder="QQ 邮箱 SMTP 授权码，非 QQ 密码"
+                    value={smtp.pass}
+                    onChange={(e) => setSmtp({ ...smtp, pass: e.target.value })}
+                  />
+                </label>
+                <button onClick={handleSaveSmtp} className={styles.btn}>
+                  {saved ? <><Check size={13} /> 已保存</> : '保存 SMTP 配置'}
                 </button>
               </div>
             </section>

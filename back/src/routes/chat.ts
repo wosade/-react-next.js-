@@ -1,10 +1,11 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { chatLimiter } from '../middleware/rateLimiter.js';
 import { runAgent } from '../services/chatService.js';
 import * as conversationModel from '../models/conversation.js'
 import * as stepModel from "../models/step.js";
 import type { StepRecord } from "../types/index.js";
 import { log } from '../lib/logger.js';
+import { requireJwt, type AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -13,7 +14,7 @@ function makeTitle(content: string): string {
   return content.slice(0, 20) + (content.length > 20 ? '…' : '');
 }
 
-router.post('/send', chatLimiter, async (req: Request, res: Response) => {
+router.post('/send', requireJwt, chatLimiter, async (req: AuthRequest, res: Response) => {
   const { message,conversationId } = req.body;
   if (!message || typeof message !== 'string') {
     res.write(
@@ -52,7 +53,7 @@ router.post('/send', chatLimiter, async (req: Request, res: Response) => {
     // 先用一个step数组去存 agent的工具调用
     const stepRecodes:StepRecord[]=[]
     let fullContent=''
-    for await(let stream of runAgent(message, history)){
+    for await(let stream of runAgent(message, history, req.userId)){
       res.write(`data:${JSON.stringify(stream)}\n\n`)
       if(stream.type==='content'){
         fullContent+=stream.content

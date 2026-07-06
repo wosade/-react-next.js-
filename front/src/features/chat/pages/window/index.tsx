@@ -13,6 +13,7 @@ interface Message {
   content: string;
   timestamp: number;
   toolCalls?: ToolCall[];
+  thinking?: string; // 思考过程中的临时文本
 }
 
 export default function ChatWindow() {
@@ -72,16 +73,23 @@ export default function ChatWindow() {
     setInput('');
 
     const userMsg: Message = { id: `u-${Date.now()}`, role: 'user', content, timestamp: Date.now() };
-    const agentId = `a-${Date.now()}`;
-    const agentMsg: Message = { id: agentId, role: 'agent', content: '', timestamp: Date.now(), toolCalls: [] };
-
-    setMessages((prev) => [...prev, userMsg, agentMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
     scrollDown();
 
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     let text = '';
+    let agentId = '';
+    let agentCreated = false;
+
+    const ensureAgent = () => {
+      if (!agentCreated) {
+        agentId = `a-${Date.now()}`;
+        agentCreated = true;
+        setMessages((prev) => [...prev, { id: agentId, role: 'agent', content: '', timestamp: Date.now(), toolCalls: [] }]);
+      }
+    };
 
     try {
       await fetchEventSource('/api/chat/send', {
@@ -96,6 +104,7 @@ export default function ChatWindow() {
           const data = JSON.parse(e.data);
 
           if (data.type === 'content' && data.content) {
+            ensureAgent();
             text += data.content;
             setMessages((prev) =>
               prev.map((m) => (m.id === agentId ? { ...m, content: text } : m)),
@@ -103,6 +112,7 @@ export default function ChatWindow() {
           }
 
           if (data.type === 'tool_step' && data.step) {
+            ensureAgent();
             const tc: ToolCall = {
               id: `${agentId}-step-${Date.now()}`,
               name: data.step.toolName,
@@ -118,13 +128,24 @@ export default function ChatWindow() {
               ),
             );
           }
+
+          if (data.type === 'thinking') {
+            ensureAgent();
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === agentId
+                  ? { ...m, thinking: (m.thinking || '') + (data.content || '') }
+                  : m,
+              ),
+            );
+          }
         },
         onerror(err) { throw err; },
       });
     } catch (err: any) {
       if (err.name === 'AbortError') return;
       setMessages((prev) =>
-        prev.filter((m) => m.id !== agentId).concat({
+        prev.filter((m) => !agentCreated || m.id !== agentId).concat({
           id: `e-${Date.now()}`,
           role: 'agent',
           content: `请求失败: ${err.message}`,
@@ -179,12 +200,29 @@ export default function ChatWindow() {
             )}
 
             <div className={msg.role === 'user' ? styles.bubbleUser : styles.bubbleAgent}>
-              {msg.content && <div className={styles.bubbleText}>{msg.content}</div>}
+              {/* 工具调用 — 放在对话框上部 */}
               {msg.toolCalls && msg.toolCalls.length > 0 && (
                 <div className={styles.toolCalls}>
                   {msg.toolCalls.map((tc) => (
                     <ToolCallCard key={tc.id} toolCall={tc} />
                   ))}
+                </div>
+              )}
+
+              {/* 工具调用与正文之间的分割线 */}
+              {msg.toolCalls && msg.toolCalls.length > 0 && msg.content && (
+                <div className={styles.toolDivider} />
+              )}
+
+              {/* 正文内容 — 放在工具调用下方 */}
+              {msg.content && <div className={styles.bubbleText}>{msg.content}</div>}
+
+              {/* 思考中状态 — 内容为空且正在加载时显示 */}
+              {msg.role === 'agent' && !msg.content && (!msg.toolCalls || msg.toolCalls.length === 0) && (
+                <div className={styles.thinkingInline}>
+                  <span />
+                  <span />
+                  <span />
                 </div>
               )}
             </div>
@@ -195,12 +233,14 @@ export default function ChatWindow() {
           </div>
         ))}
 
-        {/* thinking indicator */}
-        {loading && (
+        {/* 全局思考指示器 — 还没有 agent 消息但正在加载时显示 */}
+        {loading && !messages.some(m => m.role === 'agent') && (
           <div className={styles.rowLeft}>
             <div className={styles.avatar}><Bot size={16} /></div>
-            <div className={styles.thinkingBar}>
-              <span /><span /><span />
+            <div className={styles.bubbleAgent}>
+              <div className={styles.thinkingInline}>
+                <span /><span /><span />
+              </div>
             </div>
           </div>
         )}

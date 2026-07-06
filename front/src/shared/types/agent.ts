@@ -23,6 +23,7 @@ export interface AgentMessage {
   role: MessageRole;
   content: string;
   toolCalls?: ToolCall[];
+  thinking?: string;
   timestamp: number;
 }
 

@@ -1,21 +1,20 @@
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
+import { findUserById } from '../../models/user.js';
 
-function getTransporter() {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT) || 587;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !user || !pass) {
-    throw new Error('SMTP 未配置，请在 .env 中设置 SMTP_HOST / SMTP_USER / SMTP_PASS');
+async function getTransporter(userId: string) {
+  const user = await findUserById(userId);
+  if (!user || !user.smtpHost || !user.smtpUser || !user.smtpPass) {
+    throw new Error(
+      'SMTP 邮件服务未配置，请在设置页面的「个人信息」中填写您的邮箱 SMTP 配置（主机、端口、邮箱地址、授权码）。',
+    );
   }
 
   return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
+    host: user.smtpHost,
+    port: user.smtpPort,
+    secure: user.smtpPort === 465,
+    auth: { user: user.smtpUser, pass: user.smtpPass },
   });
 }
 
@@ -29,7 +28,7 @@ export const sendEmailDefinition = {
   type: 'function' as const,
   function: {
     name: 'send_email',
-    description: '发送一封邮件到指定邮箱地址',
+    description: '发送一封邮件到指定邮箱地址。发件人信息使用用户在设置中预配置的 SMTP 配置。',
     parameters: {
       type: 'object' as const,
       properties: {
@@ -42,14 +41,14 @@ export const sendEmailDefinition = {
   },
 };
 
-export async function sendEmail(args: {
-  to: string;
-  subject: string;
-  body: string;
-}): Promise<string> {
+export async function sendEmail(
+  args: { to: string; subject: string; body: string },
+  userId: string,
+): Promise<string> {
   try {
-    const transporter = getTransporter();
-    const from = process.env.SMTP_FROM || process.env.SMTP_USER;
+    const transporter = await getTransporter(userId);
+    const user = await findUserById(userId);
+    const from = user?.smtpFrom || user?.smtpUser || '';
 
     const info = await transporter.sendMail({
       from: `"AI 助手" <${from}>`,
@@ -60,7 +59,7 @@ export async function sendEmail(args: {
 
     return `✅ 邮件发送成功！\n收件人: ${args.to}\n主题: ${args.subject}\nMessage ID: ${info.messageId}`;
   } catch (err: any) {
-    if (err.message?.includes('SMTP 未配置')) {
+    if (err.message?.includes('SMTP 邮件服务未配置')) {
       return `❌ ${err.message}`;
     }
     return `❌ 邮件发送失败: ${err.message || err}`;

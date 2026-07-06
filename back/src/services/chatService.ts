@@ -12,6 +12,7 @@ export type AgentEvent =
 export async function* runAgent(
   userMessage: string,
   history: any[] = [],
+  userId?: string,
 ): AsyncGenerator<AgentEvent> {
   const messages: any[] = [
     {
@@ -99,7 +100,7 @@ export async function* runAgent(
         let toolOutput:string=''
         let status:'success'|'error'
         try{
-          toolOutput=await executeTool(tc.name,args)
+          toolOutput=await executeTool(tc.name,args,userId)
           status='success'
         } catch(err:any){
           toolOutput=err.message||String(err);

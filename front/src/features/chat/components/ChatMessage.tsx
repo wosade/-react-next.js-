@@ -35,16 +35,18 @@ export default function ChatMessage({ message }: ChatMessageProps) {
             isUser ? styles.bubbleUser : isTool ? styles.bubbleTool : styles.bubbleAgent
           }`}
         >
-          <p className={styles.text}>{message.content}</p>
-        </div>
+          {/* 工具调用 — 放在对话框上部 */}
+          {message.toolCalls && message.toolCalls.length > 0 && (
+            <div className={styles.toolCalls}>
+              {message.toolCalls.map((tc) => (
+                <ToolCallCard key={tc.id} toolCall={tc} />
+              ))}
+            </div>
+          )}
 
-        {message.toolCalls && message.toolCalls.length > 0 && (
-          <div className={styles.toolCalls}>
-            {message.toolCalls.map((tc) => (
-              <ToolCallCard key={tc.id} toolCall={tc} />
-            ))}
-          </div>
-        )}
+          {/* 正文内容 — 放在工具调用下方 */}
+          {message.content && <p className={styles.text}>{message.content}</p>}
+        </div>
 
         <span className={styles.time}>{formatTime(message.timestamp)}</span>
       </div>

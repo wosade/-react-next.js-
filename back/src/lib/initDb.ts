@@ -10,6 +10,11 @@ export async function initDb(): Promise<void> {
       id         VARCHAR(36)  NOT NULL PRIMARY KEY,
       username   VARCHAR(50)  NOT NULL UNIQUE,
       password   VARCHAR(255) NOT NULL,
+      smtp_host  VARCHAR(100) NOT NULL DEFAULT '',
+      smtp_port  INT          NOT NULL DEFAULT 587,
+      smtp_user  VARCHAR(100) NOT NULL DEFAULT '',
+      smtp_pass  VARCHAR(100) NOT NULL DEFAULT '',
+      smtp_from  VARCHAR(100) NOT NULL DEFAULT '',
       created_at VARCHAR(24)  NOT NULL,
       updated_at VARCHAR(24)  NOT NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -72,5 +77,21 @@ export async function initDb(): Promise<void> {
     await pool.execute(
       `ALTER TABLE \`${table}\` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
     );
+  }
+
+  // 为旧 users 表补充 SMTP 列（兼容已有数据库）
+  const smtpCols = [
+    `ALTER TABLE users ADD COLUMN smtp_host VARCHAR(100) NOT NULL DEFAULT ''`,
+    `ALTER TABLE users ADD COLUMN smtp_port INT NOT NULL DEFAULT 587`,
+    `ALTER TABLE users ADD COLUMN smtp_user VARCHAR(100) NOT NULL DEFAULT ''`,
+    `ALTER TABLE users ADD COLUMN smtp_pass VARCHAR(100) NOT NULL DEFAULT ''`,
+    `ALTER TABLE users ADD COLUMN smtp_from VARCHAR(100) NOT NULL DEFAULT ''`,
+  ];
+  for (const sql of smtpCols) {
+    try {
+      await pool.execute(sql);
+    } catch {
+      // 列已存在则忽略
+    }
   }
 }

@@ -9,6 +9,11 @@ interface UserRow {
   id: string;
   username: string;
   password: string;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_user: string;
+  smtp_pass: string;
+  smtp_from: string;
   created_at: string;
   updated_at: string;
 }
@@ -18,6 +23,11 @@ export interface User {
   id: string;
   username: string;
   password: string;
+  smtpHost: string;
+  smtpPort: number;
+  smtpUser: string;
+  smtpPass: string;
+  smtpFrom: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,4 +65,16 @@ export async function createUser(
   );
   // 查出来返回（保证字段一致）
   return (await findUserById(id))!;
+}
+
+/** 更新用户的 SMTP 配置 */
+export async function updateUserSmtp(
+  id: string,
+  smtp: { host: string; port: number; user: string; pass: string; from: string },
+): Promise<void> {
+  const now = nowISO();
+  await pool.execute(
+    `UPDATE users SET smtp_host=?, smtp_port=?, smtp_user=?, smtp_pass=?, smtp_from=?, updated_at=? WHERE id=?`,
+    [smtp.host, smtp.port, smtp.user, smtp.pass, smtp.from, now, id],
+  );
 }
