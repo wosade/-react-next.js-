@@ -1,6 +1,10 @@
+// ========================================
+// Conversation sidebar — clean list
+// ========================================
+
 .sidebar {
-  width: 280px;
-  min-width: 280px;
+  width: 260px;
+  min-width: 260px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -8,151 +12,136 @@
   border-right: 1px solid @border-default;
 }
 
-.topSection {
-  padding: @spacing-4;
-  padding-bottom: @spacing-3;
+// ---- head ----
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: @spacing-4 @spacing-4 @spacing-3;
 }
 
-.newChatBtn {
+.headTitle {
+  font-size: @text-sm;
+  font-weight: 600;
+  color: @text-primary;
+  margin: 0;
+}
+
+.newBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: @spacing-2;
-  width: 100%;
-  padding: @spacing-2\.5 @spacing-4;
-  border: 1px solid @border-default;
+  width: 32px;
+  height: 32px;
+  border: none;
   border-radius: @radius-sm;
-  background: @bg-surface;
-  color: @text-primary;
-  font-size: @text-sm;
-  font-weight: 500;
+  background: @bg-subtle;
+  color: @text-secondary;
   cursor: pointer;
   transition: @transition-fast;
 
-  &:hover {
-    background: @bg-hover;
-    border-color: @color-accent-purple;
-    color: @color-accent-purple;
+  &:hover:not(:disabled) {
+    background: @accent-bg;
+    color: @accent;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
   }
 }
 
-.plusIcon {
-  width: 16px;
-  height: 16px;
-}
-
-.divider {
-  height: 1px;
-  background: @border-default;
-  margin: 0 @spacing-4;
-}
-
-.list {
+// ---- list ----
+.listArea {
   flex: 1;
   overflow-y: auto;
-  padding: @spacing-2 0;
+  padding: 0 @spacing-3 @spacing-3;
 }
 
 .listInner {
   display: flex;
   flex-direction: column;
-  gap: @spacing-1;
-  padding: 0 @spacing-2;
+  gap: 2px;
 }
 
-.convItem,
-.convItemActive {
+// ---- conversation item ----
+.item,
+.itemActive {
   display: flex;
   flex-direction: column;
-  gap: @spacing-1;
+  gap: 2px;
   width: 100%;
-  padding: @spacing-3;
+  padding: @spacing-2\.5 @spacing-3;
   border: none;
   border-radius: @radius-sm;
   background: transparent;
   text-align: left;
   cursor: pointer;
-  transition: @transition-fast;
+  transition: background @transition-fast;
 }
 
-.convItem {
-  &:hover {
-    background: @bg-hover;
-  }
+.item:hover {
+  background: @bg-hover;
 }
 
-.convItemActive {
-  background: @bg-accent-purple-010;
+.itemActive {
+  background: @accent-bg;
 }
 
-.convHeader {
+.itemHead {
   display: flex;
-  width: 100%;
   align-items: center;
-  justify-content: space-between;
   gap: @spacing-2;
+  width: 100%;
 }
 
-.convIcon,
-.convIconActive {
-  width: 14px;
-  height: 14px;
+.itemIcon {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: @border-default;
   flex-shrink: 0;
 }
 
-.convIcon {
-  color: @text-muted;
+.itemActive .itemIcon {
+  background: @accent;
 }
 
-.convIconActive {
-  color: @color-accent-purple;
-}
-
-.convTitleActive,
-.convTitleInactive {
-  font-size: @text-sm;
+.itemTitle {
+  font-size: @text-13;
   font-weight: 500;
+  color: @text-primary;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
 }
 
-.convTitleActive {
-  color: @color-accent-purple;
+.itemActive .itemTitle {
+  color: @accent;
 }
 
-.convTitleInactive {
-  color: @text-primary;
-}
-
-.convPreview {
+.itemPreview {
   font-size: @text-xs;
   color: @text-muted;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin: 0;
+  margin: 0 0 0 14px;
 }
 
-.convMeta {
+.itemMeta {
   display: flex;
   align-items: center;
-  gap: @spacing-1;
+  margin-left: 14px;
 }
 
-.convTimeIcon {
-  width: 12px;
-  height: 12px;
-  color: @border-subtle;
-}
-
-.convTime {
+.itemTime {
   font-size: @text-10;
-  color: @border-subtle;
+  color: @text-muted;
 }
 
-.deleteBtn {
+.itemDelete {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -162,32 +151,39 @@
   background: transparent;
   color: @text-muted;
   cursor: pointer;
-  border-radius: @radius-sm;
+  border-radius: 4px;
+  opacity: 0;
+  transition: @transition-fast;
+
+  .item:hover &,
+  .itemActive:hover & {
+    opacity: 1;
+  }
 
   &:hover {
     color: @color-error;
-    background: @bg-error-005;
+    background: @palette-red-bg;
   }
 }
 
+// ---- empty ----
 .empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: @spacing-8 @spacing-4;
   text-align: center;
+  gap: @spacing-3;
 }
 
 .emptyIcon {
-  width: 32px;
-  height: 32px;
-  color: @border-subtle;
-  margin-bottom: @spacing-3;
+  color: @text-muted;
+  opacity: 0.4;
 }
 
 .emptyText {
   font-size: @text-xs;
   color: @text-muted;
-  line-height: 1.625;
+  line-height: 1.6;
+  margin: 0;
 }

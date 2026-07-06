@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Send } from 'lucide-react';
+import { Send, Square, Bot, User } from 'lucide-react';
 import { fetchConversation } from '@/features/chat/api/conversation';
 import ToolCallCard from '@/features/chat/components/ToolCallCard';
 import type { ToolCall } from '@/shared/types';
 import styles from './index.module.less';
-import {fetchEventSource} from '@microsoft/fetch-event-source'
+import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 interface Message {
   id: string;
@@ -21,10 +21,21 @@ export default function ChatWindow() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // 切换会话时加载历史消息
+  // load history on session change
   useEffect(() => {
-    if (!sessionId) return;
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+    setLoading(false);
+    setInput('');
+
+    if (!sessionId) {
+      setMessages([]);
+      return;
+    }
     fetchConversation(sessionId)
       .then((conv: any) => {
         const list = conv.messages ?? [];
@@ -43,68 +54,55 @@ export default function ChatWindow() {
             })),
           })),
         );
-        scrollToBottom();
+        scrollDown();
       })
-      .catch((err) => console.error('加载会话详情失败:', err));
+      .catch(console.error);
   }, [sessionId]);
 
-  const scrollToBottom = () => {
-    setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+  const scrollDown = () => {
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 80);
   };
-// 元素变页面不渲染
+
+  // ---- send message via SSE ----
   const abortRef = useRef<AbortController | null>(null);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
     const content = input.trim();
+    if (!content) return;
     setInput('');
 
-    const userMsg: Message = {
-      id: `u-${Date.now()}`,
-      role: 'user',
-      content,
-      timestamp: Date.now(),
-    };
-    setMessages((prev) => [...prev, userMsg]);
-    scrollToBottom();
-    // 创建 agent返回的消息
-    const agentId=`a-${Date.now()}`;
-    // 存单条agent的消息
-    const agentMessage:Message={
-      id:agentId,
-      role:'agent',
-      content:'',
-      timestamp:Date.now(),
-    }
-    setMessages((prev)=>[...prev,agentMessage])
+    const userMsg: Message = { id: `u-${Date.now()}`, role: 'user', content, timestamp: Date.now() };
+    const agentId = `a-${Date.now()}`;
+    const agentMsg: Message = { id: agentId, role: 'agent', content: '', timestamp: Date.now(), toolCalls: [] };
+
+    setMessages((prev) => [...prev, userMsg, agentMsg]);
     setLoading(true);
-    // 用fetch-eventsoruce实现ai流式对话效果
-    const Controller=new AbortController()
-    abortRef.current=Controller
-    let fullcontent=""
-    try{
-      await fetchEventSource('/api/chat/send',{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'Authorization':`Bearer ${localStorage.getItem('token')}` 
+    scrollDown();
+
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    let text = '';
+
+    try {
+      await fetchEventSource('/api/chat/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         },
-        body:JSON.stringify({message:content, conversationId: sessionId}),
-        signal:Controller.signal,
-        onmessage(e){
-          const data=JSON.parse(e.data);
-          // 流式文本
-          if(data.type === 'content' && data.content){
-            fullcontent+=data.content
-            agentMessage.content=fullcontent
-            setMessages((prev)=>
-              prev.map(item=>item.id===agentMessage.id?{...agentMessage}:item)
-            )
+        body: JSON.stringify({ message: content, conversationId: sessionId }),
+        signal: ctrl.signal,
+        onmessage(e) {
+          const data = JSON.parse(e.data);
+
+          if (data.type === 'content' && data.content) {
+            text += data.content;
+            setMessages((prev) =>
+              prev.map((m) => (m.id === agentId ? { ...m, content: text } : m)),
+            );
           }
-          // 工具步骤
-          if(data.type === 'tool_step' && data.step){
+
+          if (data.type === 'tool_step' && data.step) {
             const tc: ToolCall = {
               id: `${agentId}-step-${Date.now()}`,
               name: data.step.toolName,
@@ -112,36 +110,46 @@ export default function ChatWindow() {
               result: data.step.toolOutput,
               status: data.step.status === 'success' ? 'done' : 'error',
             };
-            agentMessage.toolCalls = [...(agentMessage.toolCalls ?? []), tc];
-            setMessages((prev)=>
-              prev.map(item=>item.id===agentMessage.id?{...agentMessage, toolCalls: agentMessage.toolCalls}:item)
-            )
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === agentId
+                  ? { ...m, toolCalls: [...(m.toolCalls ?? []), tc] }
+                  : m,
+              ),
+            );
           }
         },
-        onerror(error){
-          throw error
-        }
-      })
-    } catch(error:any){
-      if(error.name==='AbortError'){
-        return
-      }
-      setMessages((prev)=>[
-        ...prev.filter(item=>item.id!==agentMessage.id),
-        {
-          id:`e-${Date.now}`,
-          role:'agent',
-          content:`调用失败:${error.message}`,
-          timestamp:Date.now()
-        }
-      ]
-      )
-    }finally{
-      setLoading(false)
-      abortRef.current.abort()
-      abortRef.current=null;
-      scrollToBottom();
+        onerror(err) { throw err; },
+      });
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
+      setMessages((prev) =>
+        prev.filter((m) => m.id !== agentId).concat({
+          id: `e-${Date.now()}`,
+          role: 'agent',
+          content: `请求失败: ${err.message}`,
+          timestamp: Date.now(),
+        }),
+      );
+    } finally {
+      setLoading(false);
+      abortRef.current = null;
+      scrollDown();
     }
+  };
+
+  const handleStop = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setLoading(false);
+  };
+
+  // auto-resize textarea
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    const el = e.target;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -151,56 +159,76 @@ export default function ChatWindow() {
     }
   };
 
+  // ---- render ----
   return (
     <div className={styles.wrapper}>
-      <div className={styles.messageList}>
+      {/* messages */}
+      <div className={styles.messages}>
         {messages.length === 0 && !loading && (
-          <p className={styles.loadingHint}>
-            👋 开始对话吧，输入消息后按 Enter 发送
-          </p>
+          <div className={styles.emptyState}>
+            <span className={styles.emptyMark}>▣</span>
+            <h3 className={styles.emptyTitle}>开始对话</h3>
+            <p className={styles.emptyHint}>向 AI 助手提问，它可以搜索知识库、查询数据、获取天气</p>
+          </div>
         )}
+
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={
-              msg.role === 'user' ? styles.userMsg : styles.agentMsg
-            }
-          >
-            <div className={styles.bubble}>{msg.content}</div>
-            {msg.toolCalls && msg.toolCalls.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {msg.toolCalls.map((tc) => (
-                  <ToolCallCard key={tc.id} toolCall={tc} />
-                ))}
-              </div>
+          <div key={msg.id} className={msg.role === 'user' ? styles.rowRight : styles.rowLeft}>
+            {msg.role === 'agent' && (
+              <div className={styles.avatar}><Bot size={16} /></div>
+            )}
+
+            <div className={msg.role === 'user' ? styles.bubbleUser : styles.bubbleAgent}>
+              {msg.content && <div className={styles.bubbleText}>{msg.content}</div>}
+              {msg.toolCalls && msg.toolCalls.length > 0 && (
+                <div className={styles.toolCalls}>
+                  {msg.toolCalls.map((tc) => (
+                    <ToolCallCard key={tc.id} toolCall={tc} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {msg.role === 'user' && (
+              <div className={styles.avatarUser}><User size={16} /></div>
             )}
           </div>
         ))}
+
+        {/* thinking indicator */}
         {loading && (
-          <div className={styles.agentMsg}>
-            <div className={styles.bubble}>⏳ 思考中…</div>
+          <div className={styles.rowLeft}>
+            <div className={styles.avatar}><Bot size={16} /></div>
+            <div className={styles.thinkingBar}>
+              <span /><span /><span />
+            </div>
           </div>
         )}
+
         <div ref={bottomRef} />
       </div>
 
+      {/* input */}
       <div className={styles.inputBar}>
         <textarea
+          ref={textareaRef}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInput}
           onKeyDown={handleKeyDown}
           placeholder="输入消息，Enter 发送，Shift+Enter 换行"
           rows={1}
           className={styles.textarea}
           disabled={loading}
         />
-        <button
-          onClick={handleSend}
-          disabled={!input.trim() || loading}
-          className={styles.sendBtn}
-        >
-          <Send size={18} />
-        </button>
+        {loading ? (
+          <button onClick={handleStop} className={styles.btnStop} title="停止生成">
+            <Square size={16} />
+          </button>
+        ) : (
+          <button onClick={handleSend} disabled={!input.trim()} className={styles.btnSend} title="发送">
+            <Send size={16} />
+          </button>
+        )}
       </div>
     </div>
   );

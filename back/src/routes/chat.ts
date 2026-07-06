@@ -7,6 +7,11 @@ import type { StepRecord } from "../types/index.js";
 
 const router = Router();
 
+// 根据用户消息生成对话标题
+function makeTitle(content: string): string {
+  return content.slice(0, 20) + (content.length > 20 ? '…' : '');
+}
+
 router.post('/send', chatLimiter, async (req: Request, res: Response) => {
   const { message,conversationId } = req.body;
   if (!message || typeof message !== 'string') {
@@ -35,10 +40,18 @@ router.post('/send', chatLimiter, async (req: Request, res: Response) => {
   console.log(`[CHAT] ${message.slice(0, 50)}...`);
 
   try {
+    // 查历史消息，转成 OpenAI 格式传给 Agent
+    const historyMessages = await conversationModel.findMessages(conversationId);
+    const isFirstMessage = historyMessages.length <= 1; // 只有刚插入的 user 消息
+    const history = historyMessages.slice(0, -1).map((m) => ({
+      role: m.role === 'agent' ? 'assistant' : m.role as string,
+      content: m.content,
+    }));
+
     // 先用一个step数组去存 agent的工具调用
     const stepRecodes:StepRecord[]=[]
     let fullContent=''
-    for await(let stream of runAgent(message)){
+    for await(let stream of runAgent(message, history)){
       res.write(`data:${JSON.stringify(stream)}\n\n`)
       if(stream.type==='content'){
         fullContent+=stream.content
@@ -54,8 +67,14 @@ router.post('/send', chatLimiter, async (req: Request, res: Response) => {
         content:fullContent
       })
       if(agentmsg){
-        // 写入工具调用 
+        // 写入工具调用
         await stepModel.batchInsertSteps(agentmsg.id,stepRecodes)
+      }
+      // 首次对话自动生成标题
+      if (isFirstMessage) {
+        await conversationModel.updateConversation(conversationId, {
+          title: makeTitle(message),
+        });
       }
     }
     res.end();

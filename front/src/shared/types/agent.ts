@@ -32,3 +32,13 @@ export interface Conversation {
   lastMessage: string;
   updatedAt: string;
 }
+
+export interface DocumentRecord {
+  id: string;
+  userId: string;
+  name: string;
+  type: string;
+  size: number;
+  chunkCount: number;
+  createdAt: string;
+}

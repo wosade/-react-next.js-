@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bot, Circle } from 'lucide-react';
+import { Bot, Circle, Wrench } from 'lucide-react';
 import styles from './ChatHeader.module.less';
 
 interface ChatHeaderProps {

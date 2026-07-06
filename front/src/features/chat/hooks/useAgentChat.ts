@@ -88,7 +88,7 @@ export function useAgentChat() {
                 ...c,
                 title: content.slice(0, 20) + (content.length > 20 ? '…' : ''),
                 lastMessage: content,
-                updatedAt: Date.now(),
+                updatedAt: new Date().toISOString(),
               }
             : c,
         ),
@@ -120,7 +120,7 @@ export function useAgentChat() {
 
       setConversations((prev) =>
         prev.map((c) =>
-          c.id === convId ? { ...c, updatedAt: Date.now() } : c,
+          c.id === convId ? { ...c, updatedAt: new Date().toISOString() } : c,
         ),
       );
 

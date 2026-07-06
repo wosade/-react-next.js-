@@ -1,15 +1,99 @@
+// ========================================
+// Settings page
+// ========================================
+
 .page {
-  padding: @spacing-6;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: @spacing-8 @spacing-6;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-6;
 }
 
-.title {
-  font-size: @text-2xl;
-  font-weight: 600;
-  color: @text-primary;
-  margin-bottom: @spacing-4;
+// ---- head ----
+.head { display: flex; flex-direction: column; gap: @spacing-1; }
+.title { font-size: @text-2xl; font-weight: 700; color: @text-primary; margin: 0; display: flex; align-items: center; gap: @spacing-2;
+  svg { color: @accent; }
+}
+.sub { font-size: @text-sm; color: @text-muted; margin: 0; }
+
+// ---- layout ----
+.layout { display: flex; gap: @spacing-6; flex: 1; min-height: 0; }
+
+// ---- side tabs ----
+.side { width: 160px; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; }
+.sideItem, .sideOn {
+  display: flex; align-items: center; gap: @spacing-2;
+  padding: @spacing-2 @spacing-3;
+  border: none; border-radius: @radius-sm;
+  background: transparent; font-size: @text-13; color: @text-secondary; cursor: pointer; text-align: left;
+  transition: @transition-fast;
+}
+.sideItem:hover { background: @bg-hover; color: @text-primary; }
+.sideOn { background: @accent-bg; color: @accent; font-weight: 500; }
+.arrow { margin-left: auto; color: @text-muted; .sideOn & { color: @accent; } }
+
+// ---- main content ----
+.main { flex: 1; min-width: 0; background: @bg-surface; border: 1px solid @border-default; border-radius: @radius-md; padding: @spacing-6; overflow-y: auto; }
+.section { display: flex; flex-direction: column; gap: @spacing-4; }
+.secTitle { display: flex; align-items: center; gap: @spacing-1\.5; font-size: @text-sm; font-weight: 600; color: @text-primary; margin: 0 0 @spacing-2 0;
+  svg { color: @text-muted; }
 }
 
-.placeholder {
-  color: @text-muted;
-  font-size: @text-sm;
+// ---- info rows ----
+.row { display: flex; align-items: center; padding: @spacing-2\.5 0; border-bottom: 1px solid @border-subtle;
+  &:last-child { border-bottom: none; }
+}
+.lbl { width: 100px; font-size: @text-xs; color: @text-muted; }
+.val { font-size: @text-sm; color: @text-primary; font-weight: 500; }
+.valMono { font-size: @text-xs; font-family: @font-mono; color: @text-secondary; }
+
+// ---- form ----
+.form { display: flex; flex-direction: column; gap: @spacing-4; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.inp {
+  padding: @spacing-2 @spacing-3;
+  border: 1px solid @border-default;
+  border-radius: @radius-sm;
+  font-size: @text-sm; font-family: @font-sans; outline: none;
+  color: @text-primary; background: @bg-page;
+  transition: @transition-fast;
+  &:focus { border-color: @accent; box-shadow: 0 0 0 3px @accent-ring; }
+  &::placeholder { color: @text-muted; }
+  &:disabled { background: @bg-subtle; color: @text-muted; cursor: default; }
+}
+.sel {
+  padding: @spacing-2 @spacing-3;
+  border: 1px solid @border-default;
+  border-radius: @radius-sm;
+  font-size: @text-sm; font-family: @font-sans; outline: none;
+  color: @text-primary; background: @bg-page; cursor: pointer;
+  transition: @transition-fast;
+  &:focus { border-color: @accent; }
+}
+
+// ---- radio group ----
+.radioGroup { display: flex; flex-direction: column; gap: @spacing-2; }
+.radio {
+  display: flex; align-items: center; gap: @spacing-3;
+  padding: @spacing-3 @spacing-4; border: 1px solid @border-default; border-radius: @radius-sm;
+  background: @bg-page; cursor: pointer; transition: @transition-fast;
+  &:hover { border-color: @accent; }
+  input { accent-color: @accent; }
+  span { display: flex; flex-direction: column; gap: 2px;
+    strong { font-size: @text-sm; font-weight: 500; color: @text-primary; }
+    small { font-size: @text-xs; color: @text-muted; }
+  }
+}
+
+// ---- button ----
+.btn {
+  display: inline-flex; align-items: center; gap: @spacing-1\.5;
+  padding: @spacing-2 @spacing-5; border: none; border-radius: @radius-sm;
+  background: @accent; color: #fff; font-size: @text-sm; font-weight: 500;
+  cursor: pointer; align-self: flex-start; transition: @transition-fast;
+  &:hover { background: @accent-hover; }
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '@/features/auth/api';
+import { useAuth } from '@/shared/contexts/AuthContext';
 import styles from './index.module.less';
 
 export default function RegisterPage() {
@@ -9,6 +10,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login: doLogin } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,8 +25,9 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(username, password);
-      navigate('/login', { replace: true });
+      const result = await register(username, password);
+      doLogin(result.token, result.refreshToken, result.user);
+      navigate('/chat', { replace: true });
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||

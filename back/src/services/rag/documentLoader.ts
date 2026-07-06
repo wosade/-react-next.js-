@@ -4,9 +4,10 @@
 import fs from 'fs';
 import { PDFParse } from 'pdf-parse';
 import mammoth from 'mammoth';
+import WordExtractor from 'word-extractor';
 import { AppError } from '../../middleware/errorHandler.js';
 
-export type DocType = 'pdf' | 'docx' | 'txt';
+export type DocType = 'pdf' | 'docx' | 'doc' | 'txt';
 
 /** 根据文件后缀名推断文档类型 */
 export function getDocType(fileName: string): DocType {
@@ -15,8 +16,9 @@ export function getDocType(fileName: string): DocType {
     case 'pdf':
       return 'pdf';
     case 'docx':
-    case 'doc':
       return 'docx';
+    case 'doc':
+      return 'doc';
     case 'txt':
     case 'md':
       return 'txt';
@@ -44,8 +46,26 @@ export async function loadDocument(
     }
     case 'docx': {
       const buffer = fs.readFileSync(filePath);
-      const result = await mammoth.extractRawText({ buffer });
-      return result.value;
+      try {
+        const result = await mammoth.extractRawText({ buffer });
+        return result.value;
+      } catch (err: any) {
+        if (
+          err.message?.includes('end of central directory') ||
+          err.message?.includes('zip')
+        ) {
+          throw new AppError(
+            400,
+            '该 .docx 文件已损坏或格式无效，请检查文件是否完整',
+          );
+        }
+        throw err;
+      }
+    }
+    case 'doc': {
+      const extractor = new WordExtractor();
+      const doc = await extractor.extract(filePath);
+      return doc.getBody();
     }
     case 'txt': {
       return fs.readFileSync(filePath, 'utf-8');

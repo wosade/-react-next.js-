@@ -65,4 +65,12 @@ export async function initDb(): Promise<void> {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
+
+  // 确保旧表也使用 utf8mb4（CREATE IF NOT EXISTS 不会修改已存在的表编码）
+  const tables = ['users', 'conversations', 'messages', 'steps', 'documents'];
+  for (const table of tables) {
+    await pool.execute(
+      `ALTER TABLE \`${table}\` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+    );
+  }
 }

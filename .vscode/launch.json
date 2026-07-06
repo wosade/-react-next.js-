@@ -25,7 +25,7 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["tsx", "--inspect", "src/index.ts"],
+      "runtimeArgs": ["tsx", "--inspect-brk", "src/index.ts"],
       "cwd": "${workspaceFolder}/back",
       "console": "integratedTerminal",
       "skipFiles": [

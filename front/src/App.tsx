@@ -7,6 +7,7 @@ import { EmptyState, ChatWindow } from '@/features/chat/pages';
 import { NotFoundPage } from '@/features/misc/pages';
 import SettingsPage from '@/features/settings/pages';
 import ToolsPage from '@/features/tools/pages';
+import KnowledgePage from '@/features/knowledge/pages';
 
 export default function App() {
   return (
@@ -26,8 +27,9 @@ export default function App() {
           <Route path=":sessionId" element={<ChatWindow />} />
         </Route>
 
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/knowledge" element={<KnowledgePage />} />
         <Route path="/tools" element={<ToolsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/chat" replace />} />

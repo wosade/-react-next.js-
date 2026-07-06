@@ -16,6 +16,11 @@ import * as documentModel from '../models/document.js';
 
 const router = Router();
 
+// multer 底层 busboy 会把 UTF-8 文件名按 Latin-1 解析，这里修复
+function fixFilename(name: string): string {
+  return Buffer.from(name, 'latin1').toString('utf8');
+}
+
 // 上传临时目录
 const UPLOAD_DIR = path.resolve(process.cwd(), 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) {
@@ -48,6 +53,9 @@ router.post(
         res.status(400).json({ error: '请选择文件' });
         return;
       }
+
+      // busboy 把 UTF-8 文件名按 Latin-1 解析了，修复回 UTF-8
+      req.file.originalname = fixFilename(req.file.originalname);
 
       // 入库 Pipeline
       const { documentId, chunkCount } = await ingestDocument(

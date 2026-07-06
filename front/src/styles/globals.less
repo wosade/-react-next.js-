@@ -1,6 +1,8 @@
 // ========================================
-// 全局样式
+// Global Styles
 // ========================================
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 html {
   height: 100%;
@@ -13,14 +15,27 @@ body {
   background: @bg-page;
   color: @text-primary;
   font-family: @font-sans;
+  font-size: @text-sm;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+// ---- Scrollbar ----
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -28,7 +43,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: @border-subtle;
+  background: @border-default;
   border-radius: @radius-full;
 }
 
@@ -36,30 +51,24 @@ body {
   background: @text-muted;
 }
 
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-25%);
+// ---- Focus visible ----
+:focus-visible {
+  outline: 2px solid @accent;
+  outline-offset: 2px;
+  border-radius: @radius-xs;
+}
+
+// ---- Reduced motion ----
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.spin {
-  animation: spin 1s linear infinite;
-}
-
+// ---- Responsive ----
 @media (max-width: 640px) {
   body {
-    background: #FFFFFF;
+    background: @bg-surface;
   }
 }

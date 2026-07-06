@@ -102,12 +102,20 @@ export async function* runAgent(
           toolOutput=err.message||String(err);
           status='error'
         }
+        // 展示给前端的输出做截断，避免把知识库检索的完整文档片段全部展示
+        const maxDisplayLen = 300;
+        const displayOutput =
+          toolOutput.length > maxDisplayLen
+            ? toolOutput.slice(0, maxDisplayLen) +
+              `\n\n... (共 ${toolOutput.length} 字符，已截断展示)`
+            : toolOutput;
+
         yield{
           type:'tool_step',
           step:{
             toolName:tc.name,
             toolInput:args,
-            toolOutput,
+            toolOutput: displayOutput,
             status
           }
         }

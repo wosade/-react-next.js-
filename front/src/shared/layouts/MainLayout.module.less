@@ -1,93 +1,140 @@
-.wrapper {
+// ========================================
+// Side-rail layout — keeps focus on content
+// ========================================
+
+.shell {
   display: flex;
-  flex-direction: column;
   height: 100vh;
   background: @bg-page;
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  padding: 0 @spacing-6;
-  background: @bg-surface;
-  border-bottom: 1px solid @border-default;
+// ---- nav rail (56px wide) ----
+.navRail {
+  width: 56px;
   flex-shrink: 0;
-}
-
-.headerLeft {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: @spacing-8;
-}
-
-.logo {
-  font-size: @text-lg;
-  font-weight: 700;
-  color: @text-primary;
-}
-
-.nav {
-  display: flex;
+  background: @bg-surface;
+  border-right: 1px solid @border-default;
+  padding: @spacing-3 0;
   gap: @spacing-1;
+  z-index: 10;
 }
 
-.navItem {
+.brand {
   display: flex;
   align-items: center;
-  gap: @spacing-1\.5;
-  padding: @spacing-1\.5 @spacing-3;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border-radius: @radius-sm;
-  font-size: @text-sm;
-  color: @text-secondary;
+  color: @accent;
   text-decoration: none;
+  margin-bottom: @spacing-3;
   transition: @transition-fast;
 
   &:hover {
-    background: @bg-hover;
-    color: @text-primary;
+    background: @accent-bg;
   }
 }
 
-.navItemActive {
-  &:extend(.navItem);
-  background: @bg-accent-purple-010;
-  color: @color-accent-purple;
+.brandMark {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
-.headerRight {
+.navLinks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.navLink,
+.navLinkActive {
   display: flex;
   align-items: center;
-  gap: @spacing-3;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: @radius-sm;
+  color: @text-muted;
+  text-decoration: none;
+  transition: @transition-fast;
+  position: relative;
 }
 
-.username {
-  font-size: @text-sm;
+.navLink:hover {
+  background: @bg-hover;
   color: @text-secondary;
+}
+
+.navLinkActive {
+  color: @accent;
+  background: @accent-bg;
+
+  // active indicator dot
+  &::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 16px;
+    border-radius: 3px;
+    background: @accent;
+  }
+}
+
+.navBottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: @spacing-1;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: @radius-sm;
+  background: @accent-bg;
+  color: @accent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: @text-xs;
+  font-weight: 600;
+  user-select: none;
 }
 
 .logoutBtn {
   display: flex;
   align-items: center;
-  gap: @spacing-1;
-  padding: @spacing-1\.5 @spacing-3;
-  border: 1px solid @border-default;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
   border-radius: @radius-sm;
   background: transparent;
-  color: @text-secondary;
-  font-size: @text-sm;
+  color: @text-muted;
   cursor: pointer;
   transition: @transition-fast;
 
   &:hover {
-    background: @bg-error-005;
-    border-color: @color-error;
-    color: @color-error;
+    background: @palette-red-bg;
+    color: @palette-red;
   }
 }
 
+// ---- main content area ----
 .main {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }

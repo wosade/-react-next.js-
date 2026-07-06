@@ -1,148 +1,148 @@
-@import '../../../styles/variables.less';
+// ========================================
+// Inline tool-call card (inside bubble)
+// ========================================
 
 .card {
-  margin-top: @spacing-2;
-  border-radius: @radius-md;
+  border-radius: @radius-sm;
   overflow: hidden;
-  transition: @transition-normal;
+  border: 1px solid @border-default;
+  background: @bg-subtle;
+  font-size: @text-xs;
 }
 
-.cardPending {
-  border: 1px solid @border-subtle;
-  background: @bg-secondary;
-}
+.statusPending  { border-color: @border-default; }
+.statusRunning  { border-color: @border-default; background: @palette-amber-bg; }
+.statusDone     { border-color: @palette-green; background: @palette-green-bg; }
+.statusError    { border-color: @palette-red; background: @palette-red-bg; }
 
-.cardRunning {
-  border: 1px solid @bg-tool-030;
-  background: @bg-running;
-}
-
-.cardDone {
-  border: 1px solid @bg-success-030;
-  background: @bg-done;
-}
-
-.cardError {
-  border: 1px solid @bg-error-030;
-  background: @bg-error;
-}
-
-.textPending {
-  color: @text-muted;
-}
-
-.textRunning {
-  color: @color-tool;
-}
-
-.textDone {
-  color: @color-success;
-}
-
-.textError {
-  color: @color-error;
-}
-
+// ---- header ----
 .header {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: @spacing-2;
-  padding: @spacing-2 @spacing-3;
-  text-align: left;
+  justify-content: space-between;
+  padding: @spacing-1\.5 @spacing-2\.5;
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: @transition-fast;
+  font-size: @text-xs;
+  transition: background @transition-fast;
 
   &:hover {
-    background: @bg-black-003;
+    background: rgba(0, 0, 0, 0.03);
   }
 }
 
-.statusIcon {
-  flex-shrink: 0;
-  width: 12px;
-  height: 12px;
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: @spacing-1\.5;
+  min-width: 0;
 }
 
-.spinIcon {
-  .statusIcon();
-  animation: spin 1s linear infinite;
-}
-
-.toolIcon {
-  width: 14px;
-  height: 14px;
-  color: @text-secondary;
+.dot {
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
 }
 
-.toolName {
-  font-size: @text-xs;
+.name {
   font-family: @font-mono;
+  font-size: @text-11;
   font-weight: 500;
   color: @text-primary;
 }
 
-.statusLabel {
-  font-size: @text-11;
-  margin-left: auto;
-  flex-shrink: 0;
+.badge {
+  font-size: @text-10;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: @radius-full;
+
+  &.statusPending  { color: @text-muted;    background: @bg-hover; }
+  &.statusRunning  { color: @palette-amber;  background: @palette-amber-bg; }
+  &.statusDone     { color: @palette-green;  background: @palette-green-bg; }
+  &.statusError    { color: @palette-red;    background: @palette-red-bg; }
 }
 
 .chevron {
-  width: 14px;
-  height: 14px;
-  color: @text-muted;
-  transition: @transition-normal;
   flex-shrink: 0;
+  color: @text-muted;
+  transition: transform @transition-fast;
 }
 
-.chevronExpanded {
+.chevronOpen {
   transform: rotate(90deg);
 }
 
-.content {
-  border-top: 1px solid @bg-border-default-050;
-  padding: @spacing-2 @spacing-3;
+.spin {
+  animation: spin 1s linear infinite;
 }
 
-.contentSection {
-  margin-bottom: @spacing-2;
+// ---- body ----
+.body {
+  border-top: 1px solid @border-subtle;
+  padding: @spacing-2 @spacing-2\.5;
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-2;
+  max-height: 180px;
+  overflow-y: auto;
 }
 
-.contentSection:last-child {
-  margin-bottom: 0;
+.section {
+  &:last-child { margin-bottom: 0; }
 }
 
-.sectionLabel {
-  font-size: @text-11;
-  font-weight: 500;
+.label {
+  display: block;
+  font-size: @text-10;
+  font-weight: 600;
   color: @text-muted;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  margin-bottom: 3px;
+}
+
+.labelError {
   display: block;
-  margin-bottom: @spacing-1;
+  font-size: @text-10;
+  font-weight: 600;
+  color: @palette-red;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 3px;
 }
 
-.sectionLabelError {
-  .sectionLabel();
-  color: @color-error;
-}
-
-.codeBlock {
-  margin-top: @spacing-1;
-  font-size: @text-xs;
+.code {
+  margin: 0;
+  font-size: @text-11;
   font-family: @font-mono;
   color: @text-secondary;
-  background: @bg-black-003;
-  border-radius: @radius-sm;
-  padding: @spacing-2;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: @radius-xs;
+  padding: @spacing-1\.5;
   overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.5;
 }
 
-.codeBlockError {
-  .codeBlock();
-  color: @color-error;
+.codeError {
+  margin: 0;
+  font-size: @text-11;
+  font-family: @font-mono;
+  color: @palette-red;
+  background: rgba(239, 68, 68, 0.06);
+  border-radius: @radius-xs;
+  padding: @spacing-1\.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

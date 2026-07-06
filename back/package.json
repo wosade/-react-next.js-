@@ -27,6 +27,7 @@
     "rate-limit-redis": "^5.0.0",
     "tsconfig-paths": "^4.2.0",
     "uuid": "^14.0.0",
+    "word-extractor": "^1.0.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -35,7 +36,7 @@
     "@types/express": "^5.0.0",
     "@types/ioredis": "^4.28.10",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/multer": "^2.1.0",
+    "@types/multer": "^2.2.0",
     "@types/node": "^24.0.0",
     "@types/uuid": "^10.0.0",
     "tsx": "^4.19.0",

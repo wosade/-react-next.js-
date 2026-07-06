@@ -14,58 +14,47 @@ export default function Sidebar() {
 
   const loadList = async () => {
     try {
-      const list = await fetchConversations();
-      setConversations(list);
-    } catch (err) {
-      console.error('加载会话列表失败:', err);
+      setConversations(await fetchConversations());
+    } catch {
+      // silent
     }
   };
 
-  useEffect(() => {
-    loadList();
-  }, []);
+  useEffect(() => { loadList(); }, []);
 
   const handleNew = async () => {
     if (creating) return;
+    setCreating(true);
     try {
-      setCreating(true);
       const conv = await createConversation();
       await loadList();
       navigate(`/chat/${conv.id}`);
-    } catch (err) {
-      console.error('创建会话失败:', err);
+    } catch {
+      // silent
     } finally {
       setCreating(false);
     }
   };
 
-  const handleSelect = (id: string) => {
-    navigate(`/chat/${id}`);
-  };
-
-  const handleDelete = async (id: string) => {
-    await deleteConversation(id);
-    await loadList();
-    navigate('/chat');
-  };
-
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.topSection}>
-        <button onClick={handleNew} disabled={creating} className={styles.newChatBtn}>
-          <Plus className={styles.plusIcon} strokeWidth={2} />
-          {creating ? '创建中…' : '新建对话'}
+      <div className={styles.head}>
+        <h2 className={styles.headTitle}>历史对话</h2>
+        <button onClick={handleNew} disabled={creating} className={styles.newBtn} title="新建对话">
+          <Plus size={18} strokeWidth={1.5} />
         </button>
       </div>
 
-      <div className={styles.divider} />
-
-      <div className={styles.list}>
+      <div className={styles.listArea}>
         <ConversationList
           conversations={conversations}
           activeId={sessionId}
-          onSelect={handleSelect}
-          onDelete={handleDelete}
+          onSelect={(id) => navigate(`/chat/${id}`)}
+          onDelete={async (id) => {
+            await deleteConversation(id);
+            await loadList();
+            if (sessionId === id) navigate('/chat');
+          }}
         />
       </div>
     </aside>

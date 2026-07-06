@@ -1,104 +1,245 @@
+// ========================================
+// Chat window
+// ========================================
+
 .wrapper {
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: @bg-page;
 }
 
-.messageList {
+// ---- messages area ----
+.messages {
   flex: 1;
   overflow-y: auto;
-  padding: @spacing-6;
+  padding: @spacing-6 @spacing-6 @spacing-4;
   display: flex;
   flex-direction: column;
   gap: @spacing-4;
+  scroll-behavior: smooth;
 }
 
-.loadingHint {
-  text-align: center;
-  color: @text-muted;
+// ---- empty ----
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: @spacing-3;
+  user-select: none;
+}
+
+.emptyMark {
+  font-size: 2.5rem;
+  color: @accent;
+  opacity: 0.5;
+  font-weight: 700;
+  margin-bottom: @spacing-2;
+}
+
+.emptyTitle {
+  font-size: @text-lg;
+  font-weight: 600;
+  color: @text-primary;
+  margin: 0;
+}
+
+.emptyHint {
   font-size: @text-sm;
-  margin: auto;
+  color: @text-muted;
+  margin: 0;
+  text-align: center;
+  max-width: 300px;
+  line-height: 1.6;
 }
 
-.userMsg {
+// ---- message rows ----
+.rowRight {
   display: flex;
   justify-content: flex-end;
+  align-items: flex-start;
+  gap: @spacing-2;
 }
 
-.agentMsg {
+.rowLeft {
   display: flex;
   justify-content: flex-start;
+  align-items: flex-start;
+  gap: @spacing-2;
 }
 
-.bubble {
-  max-width: 70%;
+// ---- avatars ----
+.avatar,
+.avatarUser {
+  width: 30px;
+  height: 30px;
+  border-radius: @radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar {
+  background: @accent-bg;
+  color: @accent;
+}
+
+.avatarUser {
+  background: @bg-subtle;
+  color: @text-secondary;
+}
+
+// ---- bubbles ----
+.bubbleUser {
+  max-width: 72%;
   padding: @spacing-3 @spacing-4;
-  border-radius: @radius-md;
+  border-radius: @radius-lg;
+  border-bottom-right-radius: @radius-xs;
+  background: @accent;
+  color: @text-inverse;
   font-size: @text-sm;
-  line-height: 1.6;
-  white-space: pre-wrap;
+  line-height: 1.65;
   word-break: break-word;
 }
 
-.userMsg .bubble {
-  background: @color-accent-purple;
-  color: @white;
-  border-bottom-right-radius: @spacing-1;
+.bubbleAgent {
+  max-width: 82%;
+  min-width: 100px;
+  padding: @spacing-3 @spacing-4;
+  border-radius: @radius-lg;
+  border-bottom-left-radius: @radius-xs;
+  background: @bg-surface;
+  border: 1px solid @border-default;
+  font-size: @text-sm;
+  line-height: 1.65;
+  word-break: break-word;
+  box-shadow: @shadow-sm;
 }
 
-.agentMsg .bubble {
-  background: @bg-secondary;
-  color: @text-primary;
-  border-bottom-left-radius: @spacing-1;
+.bubbleText {
+  white-space: pre-wrap;
+
+  &:empty {
+    display: none;
+  }
 }
 
+// ---- tool calls inside bubble ----
+.toolCalls {
+  margin-top: @spacing-3;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+// ---- thinking indicator (breathing bar) ----
+.thinkingBar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: @spacing-3 @spacing-4;
+  background: @bg-surface;
+  border: 1px solid @border-default;
+  border-radius: @radius-lg;
+  border-bottom-left-radius: @radius-xs;
+  box-shadow: @shadow-sm;
+
+  span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: @text-muted;
+    animation: breathe 1.4s ease-in-out infinite both;
+
+    &:nth-child(1) { animation-delay: 0s; }
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+}
+
+@keyframes breathe {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1.2); }
+}
+
+// ---- input bar ----
 .inputBar {
   display: flex;
   align-items: flex-end;
-  gap: @spacing-3;
-  padding: @spacing-4 @spacing-6;
-  border-top: 1px solid @border-default;
+  gap: @spacing-2;
+  padding: @spacing-4 @spacing-5;
   background: @bg-surface;
+  border-top: 1px solid @border-default;
 }
 
 .textarea {
   flex: 1;
   resize: none;
-  padding: @spacing-3 @spacing-4;
+  padding: @spacing-2\.5 @spacing-4;
   border: 1px solid @border-default;
   border-radius: @radius-sm;
   font-size: @text-sm;
-  font-family: inherit;
+  font-family: @font-sans;
   line-height: 1.5;
   outline: none;
+  min-height: 42px;
+  max-height: 160px;
+  background: @bg-page;
+  color: @text-primary;
   transition: @transition-fast;
 
+  &::placeholder {
+    color: @text-muted;
+  }
+
   &:focus {
-    border-color: @color-accent-purple;
-    box-shadow: 0 0 0 3px @bg-accent-purple-ring;
+    border-color: @accent;
+    box-shadow: 0 0 0 1px @accent, 0 0 0 4px @accent-ring;
   }
 }
 
-.sendBtn {
+.btnSend,
+.btnStop {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border: none;
   border-radius: @radius-sm;
-  background: @color-accent-purple;
-  color: @white;
   cursor: pointer;
   flex-shrink: 0;
   transition: @transition-fast;
+}
+
+.btnSend {
+  background: @accent;
+  color: @text-inverse;
 
   &:hover:not(:disabled) {
-    background: @color-accent-purple-hover;
+    background: @accent-hover;
+    transform: scale(1.04);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.96);
   }
 
   &:disabled {
-    background: @border-subtle;
-    cursor: not-allowed;
+    background: @border-default;
+    color: @text-muted;
+    cursor: default;
+  }
+}
+
+.btnStop {
+  background: @palette-red;
+  color: @text-inverse;
+
+  &:hover {
+    background: darken(@palette-red, 8%);
   }
 }

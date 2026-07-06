@@ -44,10 +44,10 @@ export async function ingestDocument(
   // 4. 确保 Qdrant collection 存在（用第一批向量推断维度）
   await ensureCollection(embeddings[0].length);
 
-  // 5. 插入 Qdrant
+  // 5. 插入 Qdrant（每个 point 用独立 UUID）
   await insertChunks(
     chunks.map((chunk, i) => ({
-      id: `${documentId}_${i}`,
+      id: uuidv4(),
       text: chunk,
       embedding: embeddings[i],
       documentId,
