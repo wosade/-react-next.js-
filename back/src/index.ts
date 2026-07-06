@@ -14,6 +14,7 @@ import authRouter from './routes/auth.js';
 import chatRouter from './routes/chat.js';
 import knowledgeRouter from './routes/knowledge.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { log } from './lib/logger.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,9 +23,9 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// 调试日志
+// 请求日志
 app.use((req, _res, next) => {
-  console.log(`[REQ] ${req.method} ${req.url}`);
+  log.info(`${req.method} ${req.url}`);
   next();
 });
 
@@ -53,10 +54,10 @@ app.use(errorHandler);
 initDb()
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      log.info(`Server running on http://localhost:${PORT}`);
     });
   })
   .catch((err) => {
-    console.error('[DB] 数据库初始化失败:', err);
+    log.error('数据库初始化失败', err);
     process.exit(1);
   });

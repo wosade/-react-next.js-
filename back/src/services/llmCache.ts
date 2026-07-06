@@ -8,6 +8,7 @@
  */
 import { createHash } from 'crypto';
 import redis from '../lib/redis.js';
+import { log } from '../lib/logger.js';
 
 const CACHE_PREFIX = 'llm:cache:';
 const DEFAULT_TTL = 60 * 30; // 默认 30 分钟
@@ -32,13 +33,13 @@ export async function getCachedResponse(
     const key = CACHE_PREFIX + hashMessages(messages);
     const cached = await redis.get(key);
     if (cached) {
-      console.log('[LLMCache] ✅ 命中缓存');
+      log.info('[LLMCache] ✅ 命中缓存');
       return cached;
     }
-    console.log('[LLMCache] ❌ 未命中');
+    log.info('[LLMCache] ❌ 未命中');
     return null;
   } catch (err) {
-    console.error('[LLMCache] 读取缓存失败:', err);
+    log.error('[LLMCache] 读取缓存失败:', err);
     return null; // fail-open
   }
 }
@@ -57,9 +58,9 @@ export async function setCachedResponse(
   try {
     const key = CACHE_PREFIX + hashMessages(messages);
     await redis.setex(key, ttl, response);
-    console.log('[LLMCache] 💾 已缓存回复, TTL:', ttl, 's');
+    log.info('[LLMCache] 💾 已缓存回复, TTL:', ttl, 's');
   } catch (err) {
-    console.error('[LLMCache] 写入缓存失败:', err);
+    log.error('[LLMCache] 写入缓存失败:', err);
   }
 }
 
@@ -73,6 +74,6 @@ export async function invalidateCache(
     const key = CACHE_PREFIX + hashMessages(messages);
     await redis.del(key);
   } catch (err) {
-    console.error('[LLMCache] 清除缓存失败:', err);
+    log.error('[LLMCache] 清除缓存失败:', err);
   }
 }

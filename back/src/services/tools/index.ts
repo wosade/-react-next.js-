@@ -12,6 +12,16 @@ import {
   queryDatabaseDefinition,
   queryDatabaseTool,
 } from './queryDatabase.js';
+import {
+  webSearchSchema,
+  webSearchDefinition,
+  webSearch,
+} from './webSearch.js';
+import {
+  sendEmailSchema,
+  sendEmailDefinition,
+  sendEmail,
+} from './sendEmail.js';
 
 // ── 工具注册表类型 ────────────────────────────────────────
 
@@ -51,6 +61,14 @@ const toolRegistry = new Map<string, ToolEntry>([
   [
     'query_database',
     { schema: queryDatabaseSchema, definition: queryDatabaseDefinition, handler: (args) => queryDatabaseTool(args) },
+  ],
+  [
+    'web_search',
+    { schema: webSearchSchema, definition: webSearchDefinition, handler: (args) => webSearch(args) },
+  ],
+  [
+    'send_email',
+    { schema: sendEmailSchema, definition: sendEmailDefinition, handler: (args) => sendEmail(args) },
   ],
 ]);
 

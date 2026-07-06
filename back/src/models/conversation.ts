@@ -3,6 +3,7 @@
  */
 import pool from '../lib/db.js';
 import { generateId, nowISO } from '../lib/utils.js';
+import { log } from '../lib/logger.js';
 import type { Conversation, ConversationDetail, Message } from '../types/index.js';
 
 // ========== 数据库行类型（snake_case） ==========
@@ -160,7 +161,7 @@ export async function addMessage(
     'INSERT INTO messages (id, conversation_id, role, content, tool_calls, created_at) VALUES (?, ?, ?, ?, ?, ?)',
     [id, conversationId, msg.role, msg.content, msg.toolCalls ? JSON.stringify(msg.toolCalls) : null, now],
   );
-  console.log(res)
+  log.info(res)
   // 同步更新会话的 lastMessage
   const preview = msg.content.slice(0, 20) + (msg.content.length > 20 ? '…' : '');
   await pool.execute(

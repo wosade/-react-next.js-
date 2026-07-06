@@ -1,4 +1,4 @@
-import { Wrench, CloudSun, Search, Database } from 'lucide-react';
+import { Wrench, CloudSun, Search, Database, Globe } from 'lucide-react';
 import styles from './index.module.less';
 
 interface ToolDef {
@@ -34,16 +34,19 @@ const ACTIVE_TOOLS: ToolDef[] = [
     desc: '对业务数据库执行只读 SQL 查询，用于统计、分析、报表。仅允许 SELECT。',
     params: [{ name: 'sql', type: 'string', required: true, desc: 'SELECT 查询语句' }],
   },
-];
-
-const PLANNED_TOOLS: ToolDef[] = [
   {
     name: 'web_search',
     label: '网页搜索',
-    icon: <Search size={18} />,
-    desc: '搜索互联网公开信息，获取最新资讯。计划接入 SearXNG。',
-    params: [{ name: 'query', type: 'string', required: true, desc: '搜索关键词' }],
+    icon: <Globe size={18} />,
+    desc: '搜索互联网获取最新资讯、百科知识、行业动态。默认使用 DuckDuckGo，也可配置 SearXNG。',
+    params: [
+      { name: 'query', type: 'string', required: true, desc: '搜索关键词，支持中英文' },
+      { name: 'count', type: 'number', required: false, desc: '返回条数，默认 5，最大 8' },
+    ],
   },
+];
+
+const PLANNED_TOOLS: ToolDef[] = [
   {
     name: 'code_executor',
     label: '代码执行',

@@ -3,6 +3,7 @@
  */
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { log } from '../lib/logger.js';
 import { v4 as uuid } from 'uuid';
 import * as userModel from '../models/user.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -10,7 +11,7 @@ import { AppError } from '../middleware/errorHandler.js';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
-console.log(JWT_EXPIRES_IN)
+log.info(JWT_EXPIRES_IN)
 interface TokenPair {
   token: string;
   refreshToken: string;

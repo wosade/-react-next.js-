@@ -19,14 +19,17 @@ export async function* runAgent(
       content:
         '你是智能助手，可以使用工具帮用户查询信息。\n\n' +
         '可用工具：\n' +
-        '1. get_weather — 查天气\n' +
-        '2. search_knowledge — 搜索知识库中的文档（公司制度、手册、产品文档等内部知识优先用此工具检索）\n' +
-        '3. query_database — 查询业务数据库（统计、用户、订单等）\n\n' +
-        '原则：\n' +
-        '- 内部知识类问题必须先用 search_knowledge 检索，再用文档内容回答\n' +
-        '- 统计数据类问题用 query_database 查询\n' +
-        '- 查到的数据如实汇报，不要编造\n' +
-        '- 用自己的话组织语言，不要直接复制粘贴文档原文',
+        '1. get_weather — 查询城市天气\n' +
+        '2. search_knowledge — 搜索知识库中的内部文档（公司制度、操作手册等）\n' +
+        '3. query_database — 查询业务数据库（统计分析）\n' +
+        '4. web_search — 搜索互联网获取最新信息（新闻、百科、行业动态等外部知识）\n\n' +
+        '工具选择原则：\n' +
+        '- 内部文档/制度类 → 用 search_knowledge\n' +
+        '- 实时资讯/百科/外部知识 → 用 web_search\n' +
+        '- 统计数据/报表 → 用 query_database\n' +
+        '- 查天气 → 用 get_weather\n' +
+        '- 不确定时优先用 web_search，再根据结果判断是否需要其他工具\n' +
+        '- 查到数据后如实汇报，用自己的话组织语言，不要复制粘贴',
     },
     ...history,
     { role: 'user', content: userMessage },

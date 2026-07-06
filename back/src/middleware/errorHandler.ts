@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { log } from '../lib/logger.js';
 
 /** 自定义错误类，带 HTTP 状态码 */
 export class AppError extends Error {
@@ -21,7 +22,7 @@ export function errorHandler(
   const message = err.message || '服务器内部错误';
 
   if (status === 500) {
-    console.error('[Error]', err);
+    log.error('[Error]', err);
   }
 
   res.status(status).json({ error: message });

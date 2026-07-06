@@ -3,6 +3,7 @@
  * 所有缓存和限流操作都通过这个模块获取连接
  */
 import { Redis } from 'ioredis';
+import { log } from './logger.js';
 
 const redis = new Redis({
   host: process.env.REDIS_HOST || 'localhost',
@@ -17,11 +18,11 @@ const redis = new Redis({
 });
 
 redis.on('connect', () => {
-  console.log('[Redis] 已连接');
+  log.info('[Redis] 已连接');
 });
 
 redis.on('error', (err: Error) => {
-  console.error('[Redis] 连接错误:', err.message);
+  log.error('[Redis] 连接错误:', err.message);
 });
 
 export default redis;

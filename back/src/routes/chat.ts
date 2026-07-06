@@ -4,6 +4,7 @@ import { runAgent } from '../services/chatService.js';
 import * as conversationModel from '../models/conversation.js'
 import * as stepModel from "../models/step.js";
 import type { StepRecord } from "../types/index.js";
+import { log } from '../lib/logger.js';
 
 const router = Router();
 
@@ -37,7 +38,7 @@ router.post('/send', chatLimiter, async (req: Request, res: Response) => {
       );
     }
 
-  console.log(`[CHAT] ${message.slice(0, 50)}...`);
+  log.info(`CHAT ${message.slice(0, 50)}...`);
 
   try {
     // 查历史消息，转成 OpenAI 格式传给 Agent

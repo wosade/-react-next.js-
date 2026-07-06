@@ -13,12 +13,25 @@ import fs from 'fs';
 import { requireJwt, type AuthRequest } from '../middleware/auth.js';
 import { ingestDocument, removeDocument } from '../services/rag/ragService.js';
 import * as documentModel from '../models/document.js';
+import { log } from '../lib/logger.js';
 
 const router = Router();
 
 // multer 底层 busboy 会把 UTF-8 文件名按 Latin-1 解析，这里修复
 function fixFilename(name: string): string {
   return Buffer.from(name, 'latin1').toString('utf8');
+}
+
+// 清理临时文件（同步删除，确保一定执行）
+function cleanupFile(filePath: string): void {
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      log.info(`[upload] 已清理临时文件: ${filePath}`);
+    }
+  } catch (err: any) {
+    log.warn(`[upload] 清理临时文件失败: ${filePath}`, err.message);
+  }
 }
 
 // 上传临时目录
@@ -74,12 +87,12 @@ router.post(
       });
 
       // 清理临时文件
-      fs.unlink(req.file.path, () => {});
+      cleanupFile(req.file.path);
 
       res.json({ data: { documentId, chunkCount } });
     } catch (err) {
       // 出错也要清理
-      if (req.file) fs.unlink(req.file.path, () => {});
+      if (req.file) cleanupFile(req.file.path);
       next(err);
     }
   },

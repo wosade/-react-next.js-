@@ -80,7 +80,7 @@ export async function getWeather(
   const { city } = args;
 
   // 尝试模糊匹配城市名
-  let coords = CITY_COORDS[city];
+  let coords: { lat: number; lon: number } | null = CITY_COORDS[city] ?? null;
   if (!coords) {
     const match = Object.entries(CITY_COORDS).find(([key]) =>
       key.includes(city) || city.includes(key),

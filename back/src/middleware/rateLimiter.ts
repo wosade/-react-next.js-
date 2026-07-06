@@ -4,6 +4,7 @@
  * 使用 INCR + EXPIRE 实现，降级策略为 fail-open：
  * Redis 不可用时放行请求，不阻塞业务。
  */
+import { log } from '../lib/logger.js';
 import redis from '../lib/redis.js';
 import type { Request, Response, NextFunction } from 'express';
 
@@ -66,7 +67,7 @@ export function createRateLimiter(options: RateLimitOptions) {
       next();
     } catch (err) {
       // Redis 挂了 → 降级放行（fail-open）
-      console.error('[RateLimiter] Redis 异常，降级放行:', err);
+      log.error('[RateLimiter] Redis 异常，降级放行:', err);
       next();
     }
   };

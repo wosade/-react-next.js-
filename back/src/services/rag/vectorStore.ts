@@ -5,6 +5,7 @@
  */
 
 import { QdrantClient } from '@qdrant/js-client-rest';
+import { log } from '../../lib/logger.js';
 
 const QDRANT_URL = process.env.QDRANT_URL || 'http://localhost:6333';
 const COLLECTION_NAME = process.env.QDRANT_COLLECTION || 'agent_knowledge';
@@ -42,19 +43,19 @@ export async function ensureCollection(vectorSize: number): Promise<void> {
       const config = await getClient().getCollection(COLLECTION_NAME);
       const existingSize = config.config?.params?.vectors?.size;
       if (existingSize && existingSize !== vectorSize) {
-        console.warn(
+        log.warn(
           `[Qdrant] collection "${COLLECTION_NAME}" 维度不匹配 (现有 ${existingSize} ≠ 期望 ${vectorSize})，删除重建...`,
         );
         await getClient().deleteCollection(COLLECTION_NAME);
         await getClient().createCollection(COLLECTION_NAME, {
           vectors: { size: vectorSize, distance: 'Cosine' },
         });
-        console.log(
+        log.info(
           `[Qdrant] 重建 collection: ${COLLECTION_NAME} (${vectorSize}维, Cosine)`,
         );
         return;
       }
-      console.log(
+      log.info(
         `[Qdrant] collection "${COLLECTION_NAME}" 已存在 (${existingSize}维)`,
       );
       return;
@@ -63,7 +64,7 @@ export async function ensureCollection(vectorSize: number): Promise<void> {
     await getClient().createCollection(COLLECTION_NAME, {
       vectors: { size: vectorSize, distance: 'Cosine' },
     });
-    console.log(
+    log.info(
       `[Qdrant] 创建 collection: ${COLLECTION_NAME} (${vectorSize}维, Cosine)`,
     );
   } catch (err: any) {
