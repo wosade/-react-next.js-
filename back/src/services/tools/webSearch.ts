@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { cacheGet } from '../../lib/cache.js';
+
+const TTL = 1800; // 搜索结果缓存 30 分钟
 
 /** web_search 工具参数 Schema */
 export const webSearchSchema = z.object({
@@ -125,31 +128,37 @@ export async function webSearch(
 ): Promise<string> {
   const { query, count } = args;
 
-  // 优先用 SearXNG（如果配置了），否则用 DuckDuckGo
-  let results: SearchResult[] = [];
+  return cacheGet(
+    `websearch:${query}:${count}`,
+    async () => {
+      // 优先用 SearXNG（如果配置了），否则用 DuckDuckGo
+      let results: SearchResult[] = [];
 
-  if (process.env.SEARXNG_URL) {
-    try {
-      results = await searchSearXNG(query, count);
-    } catch {
-      // 回退到 DDG
-    }
-  }
+      if (process.env.SEARXNG_URL) {
+        try {
+          results = await searchSearXNG(query, count);
+        } catch {
+          // 回退到 DDG
+        }
+      }
 
-  if (results.length === 0) {
-    try {
-      results = await searchDuckDuckGo(query, count);
-    } catch (err: any) {
-      return `网页搜索失败: ${err.message}。请稍后重试或尝试更换搜索词。`;
-    }
-  }
+      if (results.length === 0) {
+        try {
+          results = await searchDuckDuckGo(query, count);
+        } catch (err: any) {
+          return `网页搜索失败: ${err.message}。请稍后重试或尝试更换搜索词。`;
+        }
+      }
 
-  if (results.length === 0) {
-    return `未找到与「${query}」相关的搜索结果。`;
-  }
+      if (results.length === 0) {
+        return `未找到与「${query}」相关的搜索结果。`;
+      }
 
-  // 格式化为 LLM 友好格式
-  return results
-    .map((r, i) => `[${i + 1}] ${r.title}\n    ${r.snippet}\n    🔗 ${r.url}`)
-    .join('\n\n');
+      // 格式化为 LLM 友好格式
+      return results
+        .map((r, i) => `[${i + 1}] ${r.title}\n    ${r.snippet}\n    🔗 ${r.url}`)
+        .join('\n\n');
+    },
+    TTL,
+  );
 }

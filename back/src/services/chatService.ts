@@ -36,7 +36,7 @@ export async function* runAgent(
     { role: 'user', content: userMessage },
   ];
 
-  const MAX_ROUNDS = 5;
+  const MAX_ROUNDS = 2;
 
   for (let round = 0; round < MAX_ROUNDS; round++) {
     const stream = await chatWithTools(messages, TOOL_DEFINITIONS);

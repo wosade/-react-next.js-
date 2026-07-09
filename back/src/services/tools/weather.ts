@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { cacheGet } from '../../lib/cache.js';
+
+const TTL = 600; // 天气缓存 10 分钟
 
 /** get_weather 工具参数 Schema */
 export const weatherSchema = z.object({
@@ -92,23 +95,29 @@ export async function getWeather(
     return `未找到城市"${city}"的坐标信息。请尝试用具体城市名查询，如"北京"、"上海"等。目前支持 ${Object.keys(CITY_COORDS).length} 个主要城市的天气查询。`;
   }
 
-  try {
-    // 调用 Open-Meteo 免费天气 API（无需 API Key）
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&timezone=Asia%2FShanghai`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json() as any;
+  return cacheGet(
+    `weather:${city}`,
+    async () => {
+      try {
+        // 调用 Open-Meteo 免费天气 API（无需 API Key）
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords!.lat}&longitude=${coords!.lon}&current_weather=true&timezone=Asia%2FShanghai`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json() as any;
 
-    const cw = data.current_weather;
-    if (!cw) return `${city}天气数据暂不可用，请稍后重试。`;
+        const cw = data.current_weather;
+        if (!cw) return `${city}天气数据暂不可用，请稍后重试。`;
 
-    const desc = weatherCodeToText(cw.weathercode);
-    const temp = cw.temperature;
-    const wind = cw.windspeed;
-    const humidity = data.hourly?.relativehumidity_2m?.[0] ?? '未知';
+        const desc = weatherCodeToText(cw.weathercode);
+        const temp = cw.temperature;
+        const wind = cw.windspeed;
+        const humidity = data.hourly?.relativehumidity_2m?.[0] ?? '未知';
 
-    return `${city}今日天气：${desc}，温度 ${temp}°C，湿度 ${humidity}%，风速 ${wind}km/h。`;
-  } catch (err: any) {
-    return `查询 ${city} 天气失败: ${err.message}`;
-  }
+        return `${city}今日天气：${desc}，温度 ${temp}°C，湿度 ${humidity}%，风速 ${wind}km/h。`;
+      } catch (err: any) {
+        return `查询 ${city} 天气失败: ${err.message}`;
+      }
+    },
+    TTL,
+  );
 }

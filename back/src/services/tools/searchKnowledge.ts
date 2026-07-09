@@ -1,5 +1,8 @@
 import { z } from 'zod';
 import { searchKnowledge } from '../rag/ragService.js';
+import { cacheGet } from '../../lib/cache.js';
+
+const TTL = 600; // 知识库搜索缓存 10 分钟
 
 /** search_knowledge 工具参数 Schema */
 export const searchKnowledgeSchema = z.object({
@@ -42,5 +45,9 @@ export const searchKnowledgeDefinition = {
 export async function searchKnowledgeTool(
   args: z.infer<typeof searchKnowledgeSchema>,
 ): Promise<string> {
-  return searchKnowledge(args.query, args.topK);
+  return cacheGet(
+    `knowledge:${args.query}:${args.topK}`,
+    () => searchKnowledge(args.query, args.topK),
+    TTL,
+  );
 }
