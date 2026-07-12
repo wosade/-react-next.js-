@@ -46,7 +46,7 @@ interface SearchResult {
 }
 
 /**
- * 策略 1: 用 DuckDuckGo 的 HTML 版搜索（免费、无需 API Key）
+ * 兜底策略: 用 DuckDuckGo 的 HTML 版搜索（免费、无需 API Key）
  * 解析返回的 HTML 提取标题/摘要/链接
  */
 async function searchDuckDuckGo(query: string, max: number): Promise<SearchResult[]> {
@@ -94,7 +94,8 @@ async function searchDuckDuckGo(query: string, max: number): Promise<SearchResul
 }
 
 /**
- * 策略 2（备用）: SearXNG 公开实例
+ * 优先策略: SearXNG 公开实例，返回结构化 JSON，更快更干净
+ * 可通过 SEARXNG_URL 环境变量指定自建实例
  */
 async function searchSearXNG(query: string, max: number): Promise<SearchResult[]> {
   const instance = process.env.SEARXNG_URL || 'https://search.sapti.me';
@@ -131,15 +132,12 @@ export async function webSearch(
   return cacheGet(
     `websearch:${query}:${count}`,
     async () => {
-      // 优先用 SearXNG（如果配置了），否则用 DuckDuckGo
       let results: SearchResult[] = [];
 
-      if (process.env.SEARXNG_URL) {
-        try {
-          results = await searchSearXNG(query, count);
-        } catch {
-          // 回退到 DDG
-        }
+      try {
+        results = await searchSearXNG(query, count);
+      } catch {
+        // SearXNG 失败，回退到 DuckDuckGo
       }
 
       if (results.length === 0) {
