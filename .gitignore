@@ -1,2 +1,10 @@
 node_modules/
 dist/
+
+# 环境变量密钥文件（勿提交 — 示例模板 .example 仍可提交）
+.env/.env
+.env/.env.back
+.env/.env.front
+back/.env/.env
+back/.env/.env.back
+back/.env/.env.front

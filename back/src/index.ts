@@ -1,9 +1,13 @@
-import { config } from 'dotenv';
+import { config as dotenvConfig } from 'dotenv';
 import { resolve } from 'path';
 
-// 从 back/.env/ 加载配置
-config({ path: resolve(import.meta.dirname, '../.env/.env') });
-config({ path: resolve(import.meta.dirname, '../.env/.env.back') });
+// 从 back/.env/ 加载配置（必须在所有业务 import 之前）
+dotenvConfig({ path: resolve(import.meta.dirname, '../.env/.env') });
+dotenvConfig({ path: resolve(import.meta.dirname, '../.env/.env.back') });
+
+// 初始化并校验必填环境变量
+import { initConfig } from './lib/envConfig.js';
+initConfig();
 
 import express from 'express';
 import cors from 'cors';
