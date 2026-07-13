@@ -53,7 +53,7 @@ router.post('/send', requireJwt, chatLimiter, async (req: AuthRequest, res: Resp
     // 先用一个step数组去存 agent的工具调用
     const stepRecodes:StepRecord[]=[]
     let fullContent=''
-    for await(let stream of runAgent(message, history, req.userId)){
+    for await(let stream of runAgent(message, history, conversationId)){
       res.write(`data:${JSON.stringify(stream)}\n\n`)
       if(stream.type==='content'){
         fullContent+=stream.content
