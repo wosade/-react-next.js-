@@ -1,23 +1,15 @@
 import { OpenAIEmbeddings } from "@langchain/openai";
-
-const EMBEDDING_MODEL =
-  process.env.EMBEDDING_MODEL || "BAAI/bge-large-zh-v1.5";
-
-const LLM_API_KEY =
-  process.env.LLM_API_KEY ||
-  "sk-hlktlwlhkbdwviqstrebieqggwgkutvabpyhhcqwydmniwua";
-const LLM_BASE_URL =
-  process.env.LLM_BASE_URL || "https://api.siliconflow.cn/v1";
+import { config } from "../../lib/envConfig.js";
 
 let _embeddings: OpenAIEmbeddings | null = null;
 
 function getEmbeddings(): OpenAIEmbeddings {
   if (!_embeddings) {
     _embeddings = new OpenAIEmbeddings({
-      model: EMBEDDING_MODEL,
-      apiKey: LLM_API_KEY,
+      model: config.embeddingModel,
+      apiKey: config.llmApiKey,
       configuration: {
-        baseURL: LLM_BASE_URL,
+        baseURL: config.llmBaseUrl,
       },
     });
   }
