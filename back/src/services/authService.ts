@@ -8,10 +8,11 @@ import { v4 as uuid } from 'uuid';
 import * as userModel from '../models/user.js';
 import { AppError } from '../middleware/errorHandler.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
-const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
-log.info(JWT_EXPIRES_IN)
+import { config } from '../lib/envConfig.js';
+
+const JWT_SECRET = config.jwtSecret;
+const JWT_EXPIRES_IN = config.jwtExpiresIn;
+const JWT_REFRESH_EXPIRES_IN = config.jwtRefreshExpiresIn;
 interface TokenPair {
   token: string;
   refreshToken: string;
@@ -45,9 +46,9 @@ export async function registerUser(username: string, password: string) {
   if (username.length < 3) {
     throw new AppError(400, '用户名至少 3 个字符');
   }
-  // if (password.length < 6) {
-  //   throw new AppError(400, '密码至少 6 个字符');
-  // }
+  if (password.length < 6) {
+    throw new AppError(400, '密码至少 6 个字符');
+  }
 
   // 2. 查重
   const existing = await userModel.findUserByUsername(username);
