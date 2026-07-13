@@ -17,12 +17,16 @@ import { DynamicStructuredTool } from "@langchain/core/tools";
 import type { StructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
 
+// 注意：此 demo 文件独立运行，不从 envConfig 读取（envConfig 要求必填校验）
+// 运行方式：npx tsx src/services/tools/demo-all-in-one.ts
 const MODEL = process.env.LLM_MODEL || "deepseek-ai/DeepSeek-V4-Flash";
-const LLM_API_KEY =
-  process.env.LLM_API_KEY ||
-  "sk-hlktlwlhkbdwviqstrebieqggwgkutvabpyhhcqwydmniwua";
-const LLM_BASE_URL =
-  process.env.LLM_BASE_URL || "https://api.siliconflow.cn/v1";
+const LLM_API_KEY = process.env.LLM_API_KEY;
+const LLM_BASE_URL = process.env.LLM_BASE_URL || "https://api.siliconflow.cn/v1";
+
+if (!LLM_API_KEY) {
+  console.error("❌ 请先设置环境变量 LLM_API_KEY");
+  process.exit(1);
+}
 
 const llm = new ChatOpenAI({
   model: MODEL,
@@ -95,7 +99,9 @@ const ipLookupTool = new DynamicStructuredTool({
 });
 
 const ALL_TOOLS = [weatherTool, calculatorTool, ipLookupTool];
-const toolByName = new Map(ALL_TOOLS.map((t) => [t.name, t]));
+const toolByName = new Map<string, StructuredTool>(
+  ALL_TOOLS.map((t) => [t.name, t as StructuredTool]),
+);
 
 // ══════════════════════════════════════════════════════════════
 //  2. LangGraph Agent 构建
