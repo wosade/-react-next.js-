@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Upload, Trash2, FileText, Loader2 } from 'lucide-react';
-import { listDocuments, uploadDocument, deleteDocument } from '@/features/chat/api/knowledge';
+import { Upload, Trash2, Download, FileText, Loader2 } from 'lucide-react';
+import { listDocuments, uploadDocument, downloadDocument, deleteDocument } from '@/features/chat/api/knowledge';
 import type { DocumentRecord } from '@/shared/types';
 import styles from './index.module.less';
 
@@ -32,6 +32,14 @@ export default function KnowledgePage() {
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';
+    }
+  };
+
+  const handleDownload = async (id: string, name: string) => {
+    try {
+      await downloadDocument(id, name);
+    } catch (err: any) {
+      alert(err.response?.data?.error || '下载失败');
     }
   };
 
@@ -90,6 +98,9 @@ export default function KnowledgePage() {
               <span className={styles.cc}>{d.chunkCount}</span>
               <span className={styles.cd}>{new Date(d.createdAt).toLocaleDateString('zh-CN')}</span>
               <span className={styles.ca}>
+                <button className={styles.dlBtn} onClick={() => handleDownload(d.id, d.name)} title="下载">
+                  <Download size={13} />
+                </button>
                 <button className={styles.delBtn} onClick={() => handleDelete(d.id, d.name)} title="删除">
                   <Trash2 size={13} />
                 </button>

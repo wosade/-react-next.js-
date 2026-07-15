@@ -41,5 +41,6 @@ export interface DocumentRecord {
   type: string;
   size: number;
   chunkCount: number;
+  filePath: string;
   createdAt: string;
 }

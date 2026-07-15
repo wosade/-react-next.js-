@@ -79,6 +79,15 @@ export async function initDb(): Promise<void> {
     );
   }
 
+  // 为旧 documents 表补充 file_path 列（兼容已有数据库）
+  try {
+    await pool.execute(
+      `ALTER TABLE documents ADD COLUMN file_path VARCHAR(500) NOT NULL DEFAULT ''`,
+    );
+  } catch {
+    // 列已存在则忽略
+  }
+
   // 为旧 users 表补充 SMTP 列（兼容已有数据库）
   const smtpCols = [
     `ALTER TABLE users ADD COLUMN smtp_host VARCHAR(100) NOT NULL DEFAULT ''`,

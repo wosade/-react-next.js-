@@ -111,7 +111,7 @@
 .cs { flex: 0 0 70px; color: @text-secondary; }
 .cc { flex: 0 0 50px; color: @text-secondary; }
 .cd { flex: 0 0 100px; color: @text-muted; font-size: @text-xs; }
-.ca { flex: 0 0 40px; display: flex; justify-content: flex-end; }
+.ca { flex: 0 0 72px; display: flex; justify-content: flex-end; gap: @spacing-1; }
 
 .ficon { color: @text-muted; flex-shrink: 0; }
 
@@ -124,6 +124,21 @@
   background: @bg-subtle;
   border: 1px solid @border-subtle;
   border-radius: 3px;
+}
+
+.dlBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: @radius-xs;
+  background: transparent;
+  color: @text-muted;
+  cursor: pointer;
+  transition: @transition-fast;
+  &:hover { background: @palette-teal-bg; color: @palette-teal; }
 }
 
 .delBtn {

@@ -1,9 +1,10 @@
 /**
  * 知识库管理 API
  *
- * POST   /api/knowledge/upload  — 上传文档并入库
- * GET    /api/knowledge         — 文档列表
- * DELETE /api/knowledge/:id     — 删除文档（向量 + 记录）
+ * POST   /api/knowledge/upload      — 上传文档并入库
+ * GET    /api/knowledge             — 文档列表
+ * GET    /api/knowledge/:id/download — 下载文档原文件
+ * DELETE /api/knowledge/:id         — 删除文档（向量 + 记录 + 文件）
  */
 
 import { Router } from 'express';
@@ -47,6 +48,9 @@ router.post(
 
 // GET /api/knowledge
 router.get('/', requireJwt, knowledgeController.list);
+
+// GET /api/knowledge/:id/download
+router.get('/:id/download', requireJwt, knowledgeController.download);
 
 // DELETE /api/knowledge/:id
 router.delete('/:id', requireJwt, knowledgeController.remove);

@@ -29,6 +29,7 @@ export interface DocumentRecord {
   type: string;
   size: number;
   chunkCount: number;
+  filePath: string;
   createdAt: string;
 }
 
@@ -39,11 +40,12 @@ export async function createDocument(doc: {
   type: string;
   size: number;
   chunkCount: number;
+  filePath: string;
 }): Promise<void> {
   await pool.execute(
-    `INSERT INTO documents (id, user_id, name, type, size, chunk_count, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [doc.id, doc.userId, doc.name, doc.type, doc.size, doc.chunkCount, nowISO()],
+    `INSERT INTO documents (id, user_id, name, type, size, chunk_count, file_path, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [doc.id, doc.userId, doc.name, doc.type, doc.size, doc.chunkCount, doc.filePath, nowISO()],
   );
 
   // 新增文档 → 失效用户列表缓存

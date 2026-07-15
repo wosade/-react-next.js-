@@ -1,5 +1,7 @@
 node_modules/
 dist/
+uploads/
+storage/
 
 # 环境变量密钥文件（勿提交 — 示例模板 .example 仍可提交）
 .env/.env
