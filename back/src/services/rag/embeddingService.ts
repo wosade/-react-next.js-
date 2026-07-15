@@ -1,15 +1,14 @@
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { config } from "../../lib/envConfig.js";
 
 let _embeddings: OpenAIEmbeddings | null = null;
 
 function getEmbeddings(): OpenAIEmbeddings {
   if (!_embeddings) {
     _embeddings = new OpenAIEmbeddings({
-      model: config.embeddingModel,
-      apiKey: config.llmApiKey,
+      model: process.env.EMBEDDING_MODEL || "BAAI/bge-large-zh-v1.5",
+      apiKey: process.env.LLM_API_KEY!,
       configuration: {
-        baseURL: config.llmBaseUrl,
+        baseURL: process.env.LLM_BASE_URL!,
       },
     });
   }

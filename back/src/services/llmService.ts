@@ -1,15 +1,14 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { config } from "../lib/envConfig.js";
 
 let _client: ChatOpenAI | null = null;
 
 export function getChatModel(): ChatOpenAI {
   if (!_client) {
     _client = new ChatOpenAI({
-      model: config.llmModel,
-      apiKey: config.llmApiKey,
+      model: process.env.LLM_MODEL!,
+      apiKey: process.env.LLM_API_KEY!,
       configuration: {
-        baseURL: config.llmBaseUrl,
+        baseURL: process.env.LLM_BASE_URL!,
       },
       streaming: true,
       temperature: 0.7,

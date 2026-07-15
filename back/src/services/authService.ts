@@ -8,11 +8,9 @@ import { v4 as uuid } from 'uuid';
 import * as userModel from '../models/user.js';
 import { AppError } from '../middleware/errorHandler.js';
 
-import { config } from '../lib/envConfig.js';
-
-const JWT_SECRET = config.jwtSecret;
-const JWT_EXPIRES_IN = config.jwtExpiresIn;
-const JWT_REFRESH_EXPIRES_IN = config.jwtRefreshExpiresIn;
+const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 interface TokenPair {
   token: string;
   refreshToken: string;

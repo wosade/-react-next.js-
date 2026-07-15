@@ -5,10 +5,6 @@ import { resolve } from 'path';
 dotenvConfig({ path: resolve(import.meta.dirname, '../.env/.env') });
 dotenvConfig({ path: resolve(import.meta.dirname, '../.env/.env.back') });
 
-// 初始化并校验必填环境变量
-import { initConfig } from './lib/envConfig.js';
-initConfig();
-
 import express from 'express';
 import cors from 'cors';
 import { initDb } from './lib/initDb.js';

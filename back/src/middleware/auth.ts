@@ -6,9 +6,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-import { config } from '../lib/envConfig.js';
-
-const JWT_SECRET = config.jwtSecret;
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 /** 扩展 Express Request，加上 userId */
 export interface AuthRequest extends Request {
