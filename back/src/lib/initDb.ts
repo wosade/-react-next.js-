@@ -71,8 +71,24 @@ export async function initDb(): Promise<void> {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
 
+  // MCP Server 配置
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS mcp_servers (
+      id          VARCHAR(36)  NOT NULL PRIMARY KEY,
+      user_id     VARCHAR(36)  NOT NULL,
+      name        VARCHAR(100) NOT NULL,
+      transport   VARCHAR(20)  NOT NULL DEFAULT 'stdio',
+      command     VARCHAR(500) NULL,
+      args        JSON         NULL,
+      url         VARCHAR(500) NULL,
+      enabled     TINYINT(1)   NOT NULL DEFAULT 1,
+      created_at  VARCHAR(24)  NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
   // 确保旧表也使用 utf8mb4（CREATE IF NOT EXISTS 不会修改已存在的表编码）
-  const tables = ['users', 'conversations', 'messages', 'steps', 'documents'];
+  const tables = ['users', 'conversations', 'messages', 'steps', 'documents', 'mcp_servers'];
   for (const table of tables) {
     await pool.execute(
       `ALTER TABLE \`${table}\` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
@@ -83,6 +99,15 @@ export async function initDb(): Promise<void> {
   try {
     await pool.execute(
       `ALTER TABLE documents ADD COLUMN file_path VARCHAR(500) NOT NULL DEFAULT ''`,
+    );
+  } catch {
+    // 列已存在则忽略
+  }
+
+  // 为旧 messages 表补充 thinking 列（存储推理模型的思考过程）
+  try {
+    await pool.execute(
+      `ALTER TABLE messages ADD COLUMN thinking TEXT NULL COMMENT '推理模型的思考过程(CoT)'`,
     );
   } catch {
     // 列已存在则忽略

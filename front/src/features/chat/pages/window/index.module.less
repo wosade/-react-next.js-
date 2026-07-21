@@ -142,6 +142,59 @@
   margin-bottom: @spacing-3;
 }
 
+// ---- thinking box (CoT) ----
+.thinkingBox {
+  margin-bottom: @spacing-3;
+  border: 1px solid @border-subtle;
+  border-radius: @radius-sm;
+  overflow: hidden;
+
+  &[open] .thinkingArrow {
+    transform: rotate(90deg);
+  }
+}
+
+.thinkingSummary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: @spacing-2 @spacing-3;
+  font-size: @text-xs;
+  color: @text-muted;
+  background: @bg-page;
+  cursor: pointer;
+  user-select: none;
+
+  &::marker,
+  &::-webkit-details-marker {
+    display: none;
+  }
+}
+
+.thinkingIcon {
+  font-size: 13px;
+}
+
+.thinkingArrow {
+  margin-left: auto;
+  font-size: 10px;
+  transition: transform 0.2s ease;
+  color: @text-muted;
+}
+
+.thinkingContent {
+  padding: @spacing-2 @spacing-3;
+  font-size: @text-xs;
+  color: @text-muted;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-top: 1px solid @border-subtle;
+  background: @bg-page;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
 // ---- inline thinking dots (inside agent bubble) ----
 .thinkingInline {
   display: flex;
@@ -192,14 +245,59 @@
   30% { opacity: 1; transform: scale(1.2); }
 }
 
+// ---- input area wrapper ----
+.inputArea {
+  border-top: 1px solid @border-default;
+  background: @bg-surface;
+}
+
+// ---- skill selector ----
+.skillBar {
+  display: flex;
+  gap: 6px;
+  padding: @spacing-2 @spacing-5 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.skillChip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid @border-subtle;
+  border-radius: 14px;
+  background: @bg-page;
+  font-size: @text-xs;
+  color: @text-secondary;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: @accent;
+    color: @accent;
+  }
+}
+
+.skillChipOn {
+  background: @accent-bg;
+  border-color: @accent;
+  color: @accent;
+  font-weight: 500;
+}
+
 // ---- input bar ----
 .inputBar {
   display: flex;
   align-items: flex-end;
   gap: @spacing-2;
-  padding: @spacing-4 @spacing-5;
-  background: @bg-surface;
-  border-top: 1px solid @border-default;
+  padding: @spacing-3 @spacing-5 @spacing-4;
 }
 
 .textarea {

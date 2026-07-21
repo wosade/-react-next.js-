@@ -1,14 +1,29 @@
 import { ChatOpenAI } from "@langchain/openai";
 
+const LLM_MODEL = process.env.LLM_MODEL;
+const LLM_API_KEY = process.env.LLM_API_KEY;
+const LLM_BASE_URL = process.env.LLM_BASE_URL;
+
+if (!LLM_API_KEY) {
+  throw new Error(
+    'LLM_API_KEY 未配置。请在 back/.env/.env.back 中设置 LLM_API_KEY',
+  );
+}
+if (!LLM_BASE_URL) {
+  throw new Error(
+    'LLM_BASE_URL 未配置。请在 back/.env/.env.back 中设置 LLM_BASE_URL',
+  );
+}
+
 let _client: ChatOpenAI | null = null;
 
 export function getChatModel(): ChatOpenAI {
   if (!_client) {
     _client = new ChatOpenAI({
-      model: process.env.LLM_MODEL!,
-      apiKey: process.env.LLM_API_KEY!,
+      model: LLM_MODEL!,
+      apiKey: LLM_API_KEY,
       configuration: {
-        baseURL: process.env.LLM_BASE_URL!,
+        baseURL: LLM_BASE_URL,
       },
       streaming: true,
       temperature: 0.7,

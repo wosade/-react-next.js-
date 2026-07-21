@@ -20,6 +20,7 @@ export interface Message {
   conversationId: string;
   role: MessageRole;
   content: string;
+  thinking?: string;
   toolCalls?: ToolCall[];
   createdAt: string;
 }

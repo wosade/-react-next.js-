@@ -8,9 +8,17 @@ import { v4 as uuid } from 'uuid';
 import * as userModel from '../models/user.js';
 import { AppError } from '../middleware/errorHandler.js';
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+
+if (!JWT_SECRET) {
+  throw new Error(
+    'JWT_SECRET 未配置。请在 back/.env/.env.back 中设置 JWT_SECRET（可参考 back/.env/.env.back.example）',
+  );
+}
+// 确保 TypeScript 能正确窄化类型
+const secret: string = JWT_SECRET;
 interface TokenPair {
   token: string;
   refreshToken: string;
@@ -23,12 +31,12 @@ interface UserPayload {
 
 /** 签发 token + refreshToken */
 function generateTokens(user: UserPayload): TokenPair {
-  const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
+  const token = jwt.sign({ id: user.id, username: user.username }, secret, {
     expiresIn: JWT_EXPIRES_IN,
   } as jwt.SignOptions);
   const refreshToken = jwt.sign(
     { id: user.id, type: 'refresh' },
-    JWT_SECRET,
+    secret,
     { expiresIn: JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions,
   );
 

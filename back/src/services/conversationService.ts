@@ -46,7 +46,7 @@ export async function deleteConversation(id: string): Promise<void> {
 /** 添加消息到会话 */
 export async function addMessage(
   conversationId: string,
-  msg: Pick<Message, 'role' | 'content' | 'toolCalls'>,
+  msg: Pick<Message, 'role' | 'content' | 'toolCalls'> & { thinking?: string },
 ): Promise<Message> {
   const message = await conversationModel.addMessage(conversationId, msg);
   if (!message) {

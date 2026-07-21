@@ -41,6 +41,7 @@ interface MessageRow {
   conversation_id: string;
   role: string;
   content: string;
+  thinking: string | null;
   tool_calls: string | null;
   created_at: string;
 }
@@ -62,6 +63,7 @@ function toMessage(row: MessageRow): Message {
     conversationId: row.conversation_id,
     role: row.role as Message['role'],
     content: row.content,
+    thinking: row.thinking || undefined,
     toolCalls: row.tool_calls
       ? (typeof row.tool_calls === 'string' ? JSON.parse(row.tool_calls) : row.tool_calls)
       : undefined,
@@ -211,7 +213,7 @@ export async function findMessages(conversationId: string): Promise<Message[]> {
 /** 添加消息到会话 */
 export async function addMessage(
   conversationId: string,
-  msg: Pick<Message, 'role' | 'content' | 'toolCalls'>,
+  msg: Pick<Message, 'role' | 'content' | 'toolCalls'> & { thinking?: string },
 ): Promise<Message | null> {
   // 确认会话存在
   const [convRows] = await pool.execute(
@@ -226,8 +228,8 @@ export async function addMessage(
   const now = nowISO();
 
   const res = await pool.execute(
-    'INSERT INTO messages (id, conversation_id, role, content, tool_calls, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [id, conversationId, msg.role, msg.content, msg.toolCalls ? JSON.stringify(msg.toolCalls) : null, now],
+    'INSERT INTO messages (id, conversation_id, role, content, thinking, tool_calls, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [id, conversationId, msg.role, msg.content, msg.thinking || null, msg.toolCalls ? JSON.stringify(msg.toolCalls) : null, now],
   );
   log.info(res);
 
@@ -247,6 +249,7 @@ export async function addMessage(
     conversationId,
     role: msg.role,
     content: msg.content,
+    thinking: msg.thinking,
     toolCalls: msg.toolCalls,
     createdAt: now,
   };

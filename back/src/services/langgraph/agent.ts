@@ -1,10 +1,10 @@
 import { StateGraph, END, START, MemorySaver } from "@langchain/langgraph";
 import { AIMessage, ToolMessage } from "@langchain/core/messages";
-import type { StructuredTool } from "@langchain/core/tools";
 import { AgentState } from "./state.js";
-import { ALL_TOOLS, toolByName } from "./tools.js";
+import { getAllTools, getToolByName } from "./tools.js";
 import { getChatModel } from "../llmService.js";
 import type { StepRecord } from "../../types/index.js";
+import { log } from "../../lib/logger.js";
 
 /** 工具执行超时（毫秒） */
 const TOOL_TIMEOUT_MS = 15_000;
@@ -13,7 +13,7 @@ let _agent: ReturnType<typeof buildAgent> | null = null;
 
 export function buildAgent() {
   const llm = getChatModel();
-  const llmWithTools = llm.bindTools(ALL_TOOLS);
+  const llmWithTools = llm.bindTools(getAllTools());
 
   async function callModel(state: typeof AgentState.State) {
     const systemMsg = state.messages.find(
@@ -22,18 +22,35 @@ export function buildAgent() {
     const messages = systemMsg ? state.messages : [...state.messages];
 
     const response = await llmWithTools.invoke(messages);
+
+    // 某些模型（如 DeepSeek-R1）可能把 tool_calls 放在 additional_kwargs 里
+    if (
+      (!response.tool_calls || response.tool_calls.length === 0) &&
+      response.additional_kwargs?.tool_calls?.length
+    ) {
+      log.info(
+        `[agent] tool_calls 在 additional_kwargs 中，共 ${response.additional_kwargs.tool_calls.length} 个，已提取`,
+      );
+      response.tool_calls = response.additional_kwargs.tool_calls as any;
+    }
+
     return { messages: [response] };
   }
 
   async function executeTools(state: typeof AgentState.State) {
     const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
-    const toolCalls = lastMessage.tool_calls || [];
+    let toolCalls = lastMessage.tool_calls || [];
+
+    // 如果标准 tool_calls 为空，尝试 additional_kwargs
+    if (toolCalls.length === 0 && lastMessage.additional_kwargs?.tool_calls?.length) {
+      toolCalls = lastMessage.additional_kwargs.tool_calls as any;
+    }
 
     const toolMessages: ToolMessage[] = [];
     const steps: StepRecord[] = [];
 
     for (const tc of toolCalls) {
-      const tool = (toolByName as Map<string, StructuredTool>).get(tc.name);
+      const tool = getToolByName(tc.name);
       let output: string;
       let status: "success" | "error" = "success";
 
@@ -41,7 +58,7 @@ export function buildAgent() {
         if (tool) {
           // 带超时的工具调用
           output = await Promise.race([
-            tool.invoke(tc.args as any),
+            (tool as any).invoke(tc.args),
             new Promise<string>((_, reject) =>
               setTimeout(
                 () => reject(new Error(`工具 "${tc.name}" 执行超时（${TOOL_TIMEOUT_MS / 1000}s）`)),
@@ -50,7 +67,8 @@ export function buildAgent() {
             ),
           ]);
         } else {
-          output = `未知工具: "${tc.name}"。可用: ${[...toolByName.keys()].join(", ")}`;
+          const availableTools = getAllTools().map((t) => t.name).join(", ");
+          output = `未知工具: "${tc.name}"。可用: ${availableTools}`;
           status = "error";
         }
       } catch (err: any) {
@@ -85,7 +103,12 @@ export function buildAgent() {
 
   function shouldContinue(state: typeof AgentState.State) {
     const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
-    if (lastMessage.tool_calls?.length) {
+    // 检查标准 tool_calls 和 additional_kwargs 中的 tool_calls
+    const toolCalls =
+      lastMessage.tool_calls?.length
+        ? lastMessage.tool_calls
+        : lastMessage.additional_kwargs?.tool_calls;
+    if (toolCalls?.length) {
       return "tools";
     }
     return END;

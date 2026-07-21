@@ -6,11 +6,13 @@ import {
   BaseMessage,
 } from "@langchain/core/messages";
 import { manageContext, getTruncationNote } from "../lib/contextManager.js";
+import { getSkill } from "./skills/index.js";
 import type { StepRecord } from "../types/index.js";
 
 export type AgentEvent =
   | { type: "status"; tool: string }
   | { type: "content"; content: string }
+  | { type: "thinking"; content: string }
   | { type: "done" }
   | { type: "error"; message: string }
   | { type: "tool_step"; step: StepRecord };
@@ -38,17 +40,25 @@ const SYSTEM_PROMPT =
  * @param userMessage    用户最新消息
  * @param history        历史消息数组（role + content），首次对话为空
  * @param conversationId 会话 ID，用作 LangGraph thread_id 实现 checkpoint 持久化
+ * @param skillName      可选：激活的技能名称
  */
 export async function* runAgent(
   userMessage: string,
   history: any[] = [],
   conversationId?: string,
+  skillName?: string,
 ): AsyncGenerator<AgentEvent> {
   const agent = getAgent();
 
+  // 根据技能选择系统提示词
+  const skill = skillName ? getSkill(skillName) : undefined;
+  const systemPrompt = skill
+    ? `【当前角色】${skill.name} — ${skill.description}\n\n${skill.systemPrompt}`
+    : SYSTEM_PROMPT;
+
   // 构建消息列表：System Prompt + 历史 + 新用户消息
   let messages: BaseMessage[] = [
-    new SystemMessage(SYSTEM_PROMPT),
+    new SystemMessage(systemPrompt),
     ...history.map((m) => {
       if (m.role === "assistant" || m.role === "agent") {
         return new AIMessage(m.content);
@@ -81,13 +91,24 @@ export async function* runAgent(
     );
 
     let fullContent = "";
+    let fullThinking = "";
     const emittedToolSteps = new Set<string>();
 
     for await (const event of stream) {
       const ev = event as any;
 
       if (ev.event === "on_chat_model_stream") {
-        const content = ev.data?.chunk?.content;
+        const chunk = ev.data?.chunk;
+        // DeepSeek-R1 等推理模型的思考过程（reasoning_content）
+        const reasoning =
+          chunk?.reasoning_content ||
+          chunk?.additional_kwargs?.reasoning_content;
+        if (reasoning) {
+          fullThinking += reasoning;
+          yield { type: "thinking", content: reasoning };
+        }
+        // 最终回答
+        const content = chunk?.content;
         if (content) {
           fullContent += content;
           yield { type: "content", content };

@@ -19,7 +19,7 @@ export async function sendMessage(
   req: AuthRequest,
   res: Response,
 ): Promise<void> {
-  const { message, conversationId } = req.body;
+  const { message, conversationId, skill } = req.body;
   if (!message || typeof message !== 'string') {
     res.write(
       `data:${JSON.stringify({ type: 'error', message: '请输入消息' })}\n\n`,
@@ -61,11 +61,15 @@ export async function sendMessage(
     // 用一个数组存 agent 的工具调用步骤
     const stepRecodes: StepRecord[] = [];
     let fullContent = '';
+    let fullThinking = '';
 
-    for await (let stream of runAgent(message, history, conversationId)) {
+    for await (let stream of runAgent(message, history, conversationId, skill)) {
       res.write(`data:${JSON.stringify(stream)}\n\n`);
       if (stream.type === 'content') {
         fullContent += stream.content;
+      }
+      if (stream.type === 'thinking') {
+        fullThinking += stream.content;
       }
       if (stream.type === 'tool_step') {
         stepRecodes.push(stream.step);
@@ -73,10 +77,11 @@ export async function sendMessage(
     }
 
     // 写入 agent 消息
-    if (fullContent) {
+    if (fullContent || fullThinking) {
       const agentmsg = await conversationModel.addMessage(conversationId, {
         role: 'agent',
-        content: fullContent,
+        content: fullContent || '已处理完成',
+        thinking: fullThinking || undefined,
       });
       if (agentmsg) {
         // 写入工具调用步骤

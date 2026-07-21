@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Send, Square, Bot, User } from 'lucide-react';
+import { Send, Square, Bot, User, Sparkles } from 'lucide-react';
 import { fetchConversation } from '@/features/chat/api/conversation';
+import { fetchSkills } from '@/features/chat/api/skills';
+import type { Skill } from '@/features/chat/api/skills';
 import ToolCallCard from '@/features/chat/components/ToolCallCard';
 import type { ToolCall } from '@/shared/types';
 import styles from './index.module.less';
@@ -21,8 +23,15 @@ export default function ChatWindow() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [activeSkill, setActiveSkill] = useState<string>('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // load skills
+  useEffect(() => {
+    fetchSkills().then((data) => setSkills(data.skills)).catch(() => {});
+  }, []);
 
   // load history on session change
   useEffect(() => {
@@ -45,6 +54,7 @@ export default function ChatWindow() {
             id: m.id,
             role: m.role,
             content: m.content,
+            thinking: m.thinking || undefined,
             timestamp: new Date(m.createdAt).getTime(),
             toolCalls: m.steps?.map((s: any, i: number) => ({
               id: `${m.id}-step-${i}`,
@@ -98,7 +108,7 @@ export default function ChatWindow() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         },
-        body: JSON.stringify({ message: content, conversationId: sessionId }),
+        body: JSON.stringify({ message: content, conversationId: sessionId, skill: activeSkill || undefined }),
         signal: ctrl.signal,
         onmessage(e) {
           const data = JSON.parse(e.data);
@@ -209,6 +219,22 @@ export default function ChatWindow() {
                 </div>
               )}
 
+              {/* 思考过程 — 推理模型的 CoT，可折叠 */}
+              {msg.thinking && (
+                <details className={styles.thinkingBox}>
+                  <summary className={styles.thinkingSummary}>
+                    <span className={styles.thinkingIcon}>🧠</span>
+                    思考过程
+                    <span className={styles.thinkingArrow}>▸</span>
+                  </summary>
+                  <div className={styles.thinkingContent}>
+                    {msg.thinking.split('\n').map((line, i) => (
+                      <div key={i}>{line || ' '}</div>
+                    ))}
+                  </div>
+                </details>
+              )}
+
               {/* 工具调用与正文之间的分割线 */}
               {msg.toolCalls && msg.toolCalls.length > 0 && msg.content && (
                 <div className={styles.toolDivider} />
@@ -249,26 +275,50 @@ export default function ChatWindow() {
       </div>
 
       {/* input */}
-      <div className={styles.inputBar}>
-        <textarea
-          ref={textareaRef}
-          value={input}
-          onChange={handleInput}
-          onKeyDown={handleKeyDown}
-          placeholder="输入消息，Enter 发送，Shift+Enter 换行"
-          rows={1}
-          className={styles.textarea}
-          disabled={loading}
-        />
-        {loading ? (
-          <button onClick={handleStop} className={styles.btnStop} title="停止生成">
-            <Square size={16} />
-          </button>
-        ) : (
-          <button onClick={handleSend} disabled={!input.trim()} className={styles.btnSend} title="发送">
-            <Send size={16} />
-          </button>
+      <div className={styles.inputArea}>
+        {/* 技能选择器 */}
+        {skills.length > 0 && (
+          <div className={styles.skillBar}>
+            <button
+              className={`${styles.skillChip} ${!activeSkill ? styles.skillChipOn : ''}`}
+              onClick={() => setActiveSkill('')}
+            >
+              <Sparkles size={12} /> 通用
+            </button>
+            {skills.map((s) => (
+              <button
+                key={s.name}
+                className={`${styles.skillChip} ${activeSkill === s.name ? styles.skillChipOn : ''}`}
+                onClick={() => setActiveSkill(activeSkill === s.name ? '' : s.name)}
+                title={s.description}
+              >
+                {s.icon} {s.name}
+              </button>
+            ))}
+          </div>
         )}
+
+        <div className={styles.inputBar}>
+          <textarea
+            ref={textareaRef}
+            value={input}
+            onChange={handleInput}
+            onKeyDown={handleKeyDown}
+            placeholder={activeSkill ? `正在使用「${activeSkill}」技能...` : "输入消息，Enter 发送，Shift+Enter 换行"}
+            rows={1}
+            className={styles.textarea}
+            disabled={loading}
+          />
+          {loading ? (
+            <button onClick={handleStop} className={styles.btnStop} title="停止生成">
+              <Square size={16} />
+            </button>
+          ) : (
+            <button onClick={handleSend} disabled={!input.trim()} className={styles.btnSend} title="发送">
+              <Send size={16} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
