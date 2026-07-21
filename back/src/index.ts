@@ -13,6 +13,8 @@ import conversationsRouter from './routes/conversations.js';
 import authRouter from './routes/auth.js';
 import chatRouter from './routes/chat.js';
 import knowledgeRouter from './routes/knowledge.js';
+import mcpRouter from './routes/mcp.js';
+import skillsRouter from './routes/skills.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { log } from './lib/logger.js';
 
@@ -46,6 +48,10 @@ app.use('/api/auth', authRouter);
 app.use('/api/conversations', conversationsRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/knowledge', knowledgeRouter);
+app.use('/api/mcp', mcpRouter);
+app.use('/api/skills', skillsRouter);
+
+// MCP Server 将在用户首次发起聊天时按需连接（见 chatController）
 
 // 错误处理（必须放在路由之后）
 app.use(errorHandler);

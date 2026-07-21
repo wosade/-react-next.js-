@@ -1,11 +1,10 @@
 import { DynamicStructuredTool } from "@langchain/core/tools";
-import { z } from "zod";
-
 import { getWeather, weatherSchema } from "../tools/weather.js";
 import { searchKnowledgeTool, searchKnowledgeSchema } from "../tools/searchKnowledge.js";
 import { queryDatabaseTool, queryDatabaseSchema } from "../tools/queryDatabase.js";
 import { webSearch, webSearchSchema } from "../tools/webSearch.js";
 import { sendEmail, sendEmailSchema } from "../tools/sendEmail.js";
+import { mcpManager } from "../mcp/index.js";
 
 export const weatherTool = new DynamicStructuredTool({
   name: "get_weather",
@@ -52,7 +51,8 @@ export const sendEmailTool = new DynamicStructuredTool({
   },
 });
 
-export const ALL_TOOLS = [
+/** 内置工具 */
+export const BUILTIN_TOOLS = [
   weatherTool,
   searchKnowledge,
   queryDatabase,
@@ -60,6 +60,25 @@ export const ALL_TOOLS = [
   sendEmailTool,
 ];
 
+/**
+ * 获取当前所有可用工具（内置 + MCP）
+ * 每次调用时动态合并，确保 MCP 工具的增减能实时生效
+ */
+export function getAllTools() {
+  const mcpTools = mcpManager.getAllTools();
+  return [...BUILTIN_TOOLS, ...mcpTools];
+}
+
+/**
+ * 按名称查找工具（动态版本）
+ */
+export function getToolByName(name: string) {
+  return getAllTools().find((t) => t.name === name) || null;
+}
+
+/** @deprecated 使用 getAllTools() 代替 */
+export const ALL_TOOLS = BUILTIN_TOOLS;
+
 export const toolByName = new Map(
-  ALL_TOOLS.map((t) => [t.name, t])
+  BUILTIN_TOOLS.map((t) => [t.name, t])
 );

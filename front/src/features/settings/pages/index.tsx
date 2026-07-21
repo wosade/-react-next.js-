@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Settings, User, Key, Palette, Server, Shield, Check, ChevronRight, Mail } from 'lucide-react';
+import { Settings, User, Key, Palette, Server, Shield, Check, ChevronRight, Mail, Plug } from 'lucide-react';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { getMe, updateSmtp } from '@/features/auth/api';
 import type { UserProfile, SmtpConfig } from '@/features/auth/api';
+import MCPSettings from '../components/MCPSettings';
 import styles from './index.module.less';
 
-type Tab = 'profile' | 'api' | 'appearance' | 'advanced';
+type Tab = 'profile' | 'api' | 'appearance' | 'mcp' | 'advanced';
 
 const TABS: { key: Tab; icon: React.ReactNode; label: string }[] = [
   { key: 'profile', icon: <User size={15} />, label: '个人信息' },
   { key: 'api', icon: <Key size={15} />, label: 'API 配置' },
   { key: 'appearance', icon: <Palette size={15} />, label: '外观' },
+  { key: 'mcp', icon: <Plug size={15} />, label: 'MCP' },
   { key: 'advanced', icon: <Server size={15} />, label: '高级' },
 ];
 
@@ -227,6 +229,12 @@ export default function SettingsPage() {
                   {saved ? <><Check size={13} /> 已保存</> : '保存'}
                 </button>
               </div>
+            </section>
+          )}
+
+          {tab === 'mcp' && (
+            <section className={styles.section}>
+              <MCPSettings />
             </section>
           )}
 
