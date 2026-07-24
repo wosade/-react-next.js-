@@ -9,11 +9,11 @@ import { log } from "../../lib/logger.js";
 /** 工具执行超时（毫秒） */
 const TOOL_TIMEOUT_MS = 15_000;
 
-let _agent: ReturnType<typeof buildAgent> | null = null;
+let _agents: Map<string, ReturnType<typeof buildAgent>> = new Map();
 
-export function buildAgent() {
+export function buildAgent(userId?: string) {
   const llm = getChatModel();
-  const llmWithTools = llm.bindTools(getAllTools());
+  const llmWithTools = llm.bindTools(getAllTools(userId));
 
   async function callModel(state: typeof AgentState.State) {
     const systemMsg = state.messages.find(
@@ -50,7 +50,7 @@ export function buildAgent() {
     const steps: StepRecord[] = [];
 
     for (const tc of toolCalls) {
-      const tool = getToolByName(tc.name);
+      const tool = getToolByName(tc.name, userId);
       let output: string;
       let status: "success" | "error" = "success";
 
@@ -67,7 +67,7 @@ export function buildAgent() {
             ),
           ]);
         } else {
-          const availableTools = getAllTools().map((t) => t.name).join(", ");
+          const availableTools = getAllTools(userId).map((t) => t.name).join(", ");
           output = `未知工具: "${tc.name}"。可用: ${availableTools}`;
           status = "error";
         }
@@ -131,14 +131,23 @@ export function buildAgent() {
   return workflow.compile({ checkpointer });
 }
 
-export function getAgent() {
-  if (!_agent) {
-    _agent = buildAgent();
+export function getAgent(userId?: string) {
+  const key = userId || "__anonymous__";
+  if (!_agents.has(key)) {
+    _agents.set(key, buildAgent(userId));
   }
-  return _agent;
+  return _agents.get(key)!;
 }
 
-/** 重置 Agent 实例（配置变更后调用） */
-export function resetAgent(): void {
-  _agent = null;
+/** 重置 Agent 实例（配置变更后调用）
+ *  @param userId — 指定则仅重置该用户；不指定则重置所有
+ */
+export function resetAgent(userId?: string): void {
+  if (userId) {
+    _agents.delete(userId);
+    log.info(`[agent] 已重置用户 ${userId} 的 Agent`);
+  } else {
+    _agents.clear();
+    log.info("[agent] 已重置所有 Agent");
+  }
 }

@@ -15,10 +15,10 @@ export async function getList(
 ): Promise<void> {
   try {
     const servers = await mcpServerModel.listByUser(req.userId!);
-    // 附加连接状态
+    // 附加连接状态（传入 userId 以区分私有连接）
     const result = servers.map((s) => ({
       ...s,
-      connected: mcpManager.isConnected(s.id),
+      connected: mcpManager.isConnected(s.id, req.userId),
     }));
     res.json({ data: result });
   } catch (err) {
@@ -68,7 +68,7 @@ export async function update(
     }
 
     // 先断开旧连接
-    await mcpManager.disconnect(id);
+    await mcpManager.disconnect(id, req.userId);
 
     const updated = await mcpServerModel.update(id, {
       name,
@@ -100,7 +100,7 @@ export async function remove(
     }
 
     // 先断开连接
-    await mcpManager.disconnect(id);
+    await mcpManager.disconnect(id, req.userId);
 
     await mcpServerModel.remove(id);
     res.json({ data: { message: "删除成功" } });
@@ -123,9 +123,19 @@ export async function connect(
       return;
     }
 
-    const tools = await mcpManager.connect(config);
+    // 权限校验：私有 MCP 只能由所属用户连接
+    if (config.scope === "private") {
+      const servers = await mcpServerModel.listByUser(req.userId!);
+      const owned = servers.find((s) => s.id === id);
+      if (!owned) {
+        res.status(403).json({ error: "无权连接此私有 MCP Server" });
+        return;
+      }
+    }
+
+    const tools = await mcpManager.connect(config, req.userId);
     log.info(
-      `[MCP] 用户 ${req.userId} 手动连接 ${config.name}，获得 ${tools.length} 个工具`,
+      `[MCP] 用户 ${req.userId} 手动连接 ${config.name}（${config.scope}），获得 ${tools.length} 个工具`,
     );
     res.json({ data: { connected: true, toolCount: tools.length, tools: tools.map((t) => ({ name: t.name, description: t.description })) } });
   } catch (err) {
@@ -141,7 +151,7 @@ export async function disconnect(
 ): Promise<void> {
   try {
     const id = req.params.id as string;
-    await mcpManager.disconnect(id);
+    await mcpManager.disconnect(id, req.userId);
     res.json({ data: { connected: false } });
   } catch (err) {
     next(err);
@@ -156,7 +166,7 @@ export async function getTools(
 ): Promise<void> {
   try {
     const id = req.params.id as string;
-    const tools = mcpManager.getServerTools(id);
+    const tools = mcpManager.getServerTools(id, req.userId);
     res.json({
       data: tools.map((t) => ({ name: t.name, description: t.description })),
     });

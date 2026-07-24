@@ -140,8 +140,9 @@ export function getAllSkills(): Skill[] {
 
 export function filterToolsBySkill(
   skill: Skill,
+  userId?: string,
 ): StructuredTool[] {
-  const allTools = getAllTools();
+  const allTools = getAllTools(userId);
   if (skill.allowedTools.length === 0) return allTools;
   return allTools.filter((t) => skill.allowedTools.includes(t.name));
 }

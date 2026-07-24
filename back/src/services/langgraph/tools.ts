@@ -63,17 +63,18 @@ export const BUILTIN_TOOLS = [
 /**
  * 获取当前所有可用工具（内置 + MCP）
  * 每次调用时动态合并，确保 MCP 工具的增减能实时生效
+ * @param userId — 传入则包含该用户的私有 MCP 工具 + 公共 MCP 工具
  */
-export function getAllTools() {
-  const mcpTools = mcpManager.getAllTools();
+export function getAllTools(userId?: string) {
+  const mcpTools = mcpManager.getAllTools(userId);
   return [...BUILTIN_TOOLS, ...mcpTools];
 }
 
 /**
  * 按名称查找工具（动态版本）
  */
-export function getToolByName(name: string) {
-  return getAllTools().find((t) => t.name === name) || null;
+export function getToolByName(name: string, userId?: string) {
+  return getAllTools(userId).find((t) => t.name === name) || null;
 }
 
 /** @deprecated 使用 getAllTools() 代替 */

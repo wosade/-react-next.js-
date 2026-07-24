@@ -63,7 +63,7 @@ export async function sendMessage(
     let fullContent = '';
     let fullThinking = '';
 
-    for await (let stream of runAgent(message, history, conversationId, skill)) {
+    for await (let stream of runAgent(message, history, conversationId, skill, req.userId)) {
       res.write(`data:${JSON.stringify(stream)}\n\n`);
       if (stream.type === 'content') {
         fullContent += stream.content;

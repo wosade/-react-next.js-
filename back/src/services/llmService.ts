@@ -26,6 +26,7 @@ export function getChatModel(): ChatOpenAI {
         baseURL: LLM_BASE_URL,
       },
       streaming: true,
+      // 随机参数 越大越随机
       temperature: 0.7,
     });
   }

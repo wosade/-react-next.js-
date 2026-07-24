@@ -14,6 +14,7 @@ interface MCPServerRow {
   args: string | null;
   url: string | null;
   enabled: number; // 0 or 1
+  scope: string;
   created_at: string;
 }
 
@@ -26,6 +27,7 @@ function toConfig(row: MCPServerRow): MCPServerConfig {
     args: row.args ? (typeof row.args === "string" ? JSON.parse(row.args) : row.args) : undefined,
     url: row.url || undefined,
     enabled: row.enabled === 1,
+    scope: (row.scope as "shared" | "private") || "private",
   };
 }
 
@@ -57,13 +59,14 @@ export async function create(
     command?: string;
     args?: string[];
     url?: string;
+    scope?: "shared" | "private";
   },
 ): Promise<MCPServerConfig> {
   const id = generateId();
   const now = nowISO();
   await pool.execute(
-    `INSERT INTO mcp_servers (id, user_id, name, transport, command, args, url, enabled, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+    `INSERT INTO mcp_servers (id, user_id, name, transport, command, args, url, enabled, scope, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
     [
       id,
       userId,
@@ -72,6 +75,7 @@ export async function create(
       data.command || null,
       data.args ? JSON.stringify(data.args) : null,
       data.url || null,
+      data.scope || "private",
       now,
     ],
   );
@@ -87,6 +91,7 @@ export async function update(
     args: string[];
     url: string;
     enabled: boolean;
+    scope: "shared" | "private";
   }>,
 ): Promise<MCPServerConfig | null> {
   const fields: string[] = [];
@@ -111,6 +116,10 @@ export async function update(
   if (data.enabled !== undefined) {
     fields.push("enabled = ?");
     values.push(data.enabled ? 1 : 0);
+  }
+  if (data.scope !== undefined) {
+    fields.push("scope = ?");
+    values.push(data.scope);
   }
 
   if (fields.length === 0) return findById(id);

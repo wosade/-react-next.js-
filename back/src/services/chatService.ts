@@ -41,14 +41,16 @@ const SYSTEM_PROMPT =
  * @param history        历史消息数组（role + content），首次对话为空
  * @param conversationId 会话 ID，用作 LangGraph thread_id 实现 checkpoint 持久化
  * @param skillName      可选：激活的技能名称
+ * @param userId         当前用户 ID，用于工具隔离和 Agent 实例隔离
  */
 export async function* runAgent(
   userMessage: string,
   history: any[] = [],
   conversationId?: string,
   skillName?: string,
+  userId?: string,
 ): AsyncGenerator<AgentEvent> {
-  const agent = getAgent();
+  const agent = getAgent(userId);
 
   // 根据技能选择系统提示词
   const skill = skillName ? getSkill(skillName) : undefined;
@@ -85,7 +87,7 @@ export async function* runAgent(
       {
         version: "v2",
         // thread_id 让 LangGraph Checkpointer 在此会话内保持状态
-        configurable: { thread_id: conversationId || "default" },
+        configurable: { thread_id: conversationId || "default", userId },
         recursionLimit: 10,
       },
     );

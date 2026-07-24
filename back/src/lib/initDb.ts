@@ -113,6 +113,15 @@ export async function initDb(): Promise<void> {
     // 列已存在则忽略
   }
 
+  // 为旧 mcp_servers 表补充 scope 列（公共/私有隔离）
+  try {
+    await pool.execute(
+      `ALTER TABLE mcp_servers ADD COLUMN scope VARCHAR(10) NOT NULL DEFAULT 'private' COMMENT 'shared=公共, private=私有'`,
+    );
+  } catch {
+    // 列已存在则忽略
+  }
+
   // 为旧 users 表补充 SMTP 列（兼容已有数据库）
   const smtpCols = [
     `ALTER TABLE users ADD COLUMN smtp_host VARCHAR(100) NOT NULL DEFAULT ''`,
