@@ -1,7 +1,7 @@
 /**
  * MCP Client 管理器 — 管理多个 MCP Server 连接，动态发现工具
  *
- * 支持 stdio (本地命令行) 和 SSE (远程 HTTP) 两种传输方式
+ * 支持 stdio (本地命令行) 和 Streamable HTTP (远程) 两种传输方式
  *
  * scope 机制：
  * - "shared"  — 公共 MCP（如 Brave Search），全局共享一份连接
@@ -9,7 +9,7 @@
  */
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createMCPTool } from "./mcpToolAdapter.js";
 import type { StructuredTool } from "@langchain/core/tools";
 import { log } from "../../lib/logger.js";
@@ -294,7 +294,7 @@ class MCPClientManager {
       if (!config.url) {
         throw new Error(`MCP Server "${config.name}": SSE 模式必须提供 url`);
       }
-      return new SSEClientTransport(new URL(config.url));
+      return new StreamableHTTPClientTransport(new URL(config.url));
     }
 
     throw new Error(`不支持的传输方式: ${config.transport}`);
